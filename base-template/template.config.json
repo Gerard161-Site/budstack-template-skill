@@ -1,0 +1,30 @@
+{
+  "id": "SLUG",
+  "slug": "SLUG",
+  "name": "TEMPLATE_NAME",
+  "description": "A brief description of the template's style, audience, and vibe.",
+  "version": "1.0.0",
+  "author": "BudStack Platform",
+  "category": "modern",
+  "tags": ["tag1", "tag2", "tag3", "tag4"],
+  "features": [
+    "Responsive design",
+    "Brand color theming",
+    "Professional layout",
+    "Mobile-optimized"
+  ],
+  "previewUrl": "/templates/SLUG/hero.jpg",
+  "thumbnailUrl": "/templates/SLUG/hero.jpg",
+  "screenshots": [],
+  "demoUrl": null,
+  "price": 0,
+  "isPremium": false,
+  "isActive": true,
+  "components": [],
+  "customization": {
+    "colors": { "primary": "#3B82F6", "secondary": "#6366F1", "accent": "#38BDF8" },
+    "fonts": { "base": "'Inter', sans-serif", "heading": "'Inter', sans-serif" }
+  },
+  "dependencies": ["framer-motion", "lucide-react"],
+  "accessibility": { "wcag_level": "AA", "screen_reader_tested": true }
+}
