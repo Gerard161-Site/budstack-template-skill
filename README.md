@@ -1,95 +1,106 @@
 # BudStack Template Creator
 
-Generate production-ready BudStack store templates using the data-driven section system. Templates are pure data (JSON + CSS) — the platform's section registry handles all rendering.
+A Claude Code skill that generates unique, production-ready storefront templates for the BudStack cannabis SaaS platform.
 
-## What This Skill Does
+Give it a brand name and vibe — it interviews you, designs a complete template, and outputs 4 data files ready to upload.
 
-A designer describes a vibe → the agent interviews them → generates 4 data files → pushes to a GitHub repo → template is uploaded to BudStack → tenants can clone and customize.
+## Install
 
-**No React code is generated.** Templates are entirely data-driven.
-
-## Contents
-
-```
-budstack-template-skill/
-├── SKILL.md              # Complete agent instructions (the main doc)
-├── helpers.ts            # Color conversion and generation utilities
-├── README.md             # This file
-└── base-template/        # Reference starter files
-    ├── layout.json       # Section composition template
-    ├── defaults.json     # Design system + content template
-    ├── template.config.json  # Marketplace metadata template
-    └── styles.css        # CSS template with variables
+```bash
+git clone https://github.com/Gerard161-Site/budstack-template-skill.git
+cd budstack-template-skill
+chmod +x install.sh
+./install.sh
 ```
 
-## Quick Start
+## Usage
 
-### For Claude / AI Agents
-
-When a user asks to create a template:
-
-1. Read `SKILL.md` — it contains the complete 10-step workflow
-2. Interview the designer (name, mood, colors, sections)
-3. Generate all 4 files using the base-template as structural reference
-4. Use `helpers.ts` functions for color conversion (HEX → HSL → RGB)
-5. Output to `/Users/gkavanagh/Development/HealingBuds/templates/{slug}-template/`
-6. Initialize git repo and push to GitHub
-
-### For Humans
-
-Read `SKILL.md` for the full process. The TL;DR:
-
-1. Pick sections from the registry (21 available components)
-2. Define colors in raw HSL format (e.g., `"275 70% 55%"`)
-3. Write `layout.json` (section order), `defaults.json` (design system + content), `template.config.json` (metadata), `styles.css` (custom styling)
-4. Push to GitHub, upload via Super Admin
-
-## Template Architecture
-
-Templates use BudStack's **data-driven rendering pipeline**:
+In any Claude Code session:
 
 ```
-layout.json → TemplateRenderer → Section Registry → React Components
-defaults.json → Design tokens + content fallbacks
-styles.css → Scoped CSS with :root variables
+/create-template GreenLeaf
 ```
 
-The platform provides 21 pre-built section components (heroes, content blocks, CTAs, navigation, footers). Templates simply compose them via `layout.json` and style them via CSS variables.
+The skill will:
+1. **Interview you** — brand vibe, audience, colors, content density, special needs
+2. **Design the template** — picks layout archetype, nav, footer, typography, color system
+3. **Present the design brief** — you approve before any files are written
+4. **Generate 4 files** — layout.json, defaults.json, styles.css, template.config.json
+5. **Set up assets** — copies your brand images into the template's `assets/` directory
+6. **Compare against existing templates** — ensures structural uniqueness
+
+## What It Produces
+
+```
+your-brand/
+  layout.json           # Section composition (which components, what order, configs)
+  defaults.json         # Design system (colors, fonts, spacing) + default content
+  styles.css            # Scoped CSS with variables, animations, dark/light treatments
+  template.config.json  # Marketplace metadata
+  assets/               # Hero images, section backgrounds, gallery photos
+    hero.jpg
+    lab-scene.jpg
+    ...
+```
+
+**No React code.** Templates are pure data. The BudStack platform renders them using 22 pre-built section components.
+
+## Available Components
+
+| Heroes | Content | CTAs | Navigation | Footers |
+|--------|---------|------|------------|---------|
+| HeroFullScreen | ValueProps | CTABanner | NavDark | FooterBrand |
+| HeroSplit | ProductShowcase | CTAWithImage | NavTransparent | FooterFull |
+| HeroVideo | Testimonials | CTASplit | NavFull | FooterSimple |
+| HeroMinimal | About | | NavMinimal | |
+| | Features | | | |
+| | Stats | | | |
+| | FAQ | | | |
+| | Gallery | | | |
+| | BlogFeed | | | |
+| | ImageShowcase | | | |
+
+## 12 Layout Archetypes
+
+The skill knows 12 distinct page compositions and mixes them for variety:
+
+1. **The Authority** — Medical/professional (HeroSplit + About + Features + CTASplit)
+2. **The Cinematic** — Premium/luxury (HeroVideo + ImageShowcase + BlogFeed)
+3. **The Minimalist** — Clean/editorial (HeroMinimal + ValueProps + CTABanner)
+4. **The Storyteller** — Brand-forward (HeroFullScreen + About + Testimonials + CTAWithImage)
+5. **The Marketplace** — E-commerce (HeroFullScreen + ProductShowcase + Stats + Testimonials)
+6. **The Rebel** — Street culture/bold (HeroFullScreen + Stats + Features + Gallery)
+7. **The Wellness Retreat** — Organic/natural (HeroFullScreen + ValueProps + About + FAQ)
+8. **The Tech Forward** — Modern/digital (HeroSplit + Features + Stats + BlogFeed)
+9. **The Gallery First** — Visual/lifestyle (HeroFullScreen + Gallery + About)
+10. **The Converter** — Consultation funnel (HeroFullScreen + CTASplit + ValueProps + FAQ)
+11. **The Magazine** — Content-rich (HeroMinimal + BlogFeed + Features)
+12. **The Showcase** — Product/facility (HeroVideo + ImageShowcase + Stats + ProductShowcase)
 
 ## Key Rules
 
-1. **All colors must be raw HSL**: `"275 70% 55%"` (never hex, never `hsl()` wrapped)
-2. **No React code**: Templates are data files only
-3. **Section types are case-sensitive**: `HeroFullScreen` not `herofullscreen`
-4. **CSS scoping**: All styles under `.template-{slug}` class
-5. **Google Fonts URL**: Must appear in both `layout.json` and `styles.css`
+- All colors in raw HSL format: `"155 70% 35%"` (never hex, never `hsl()` wrapper)
+- CSS scoped under `.template-{slug}` class
+- Google Fonts URL in both layout.json and styles.css
+- Dark sections need CSS variable overrides for heading/text colors
+- Templates must include images in `assets/` — no blank placeholders
+- Each template must be structurally different from existing ones
 
-## Available Sections
+## Reference Files
 
-| Heroes | Content | CTAs | Nav | Footers |
-|--------|---------|------|-----|---------|
-| HeroFullScreen | ValueProps | CTABanner | NavMinimal | FooterSimple |
-| HeroSplit | ProductShowcase | CTAWithImage | NavFull | FooterFull |
-| HeroVideo | Testimonials | CTASplit | NavTransparent | |
-| HeroMinimal | About, Gallery | | | |
-| | Stats, FAQ | | | |
-| | BlogFeed, Features | | | |
+| File | Purpose |
+|------|---------|
+| `SKILL.md` | Complete skill instructions (the brain) |
+| `references/component-catalog.md` | All 22 section components with config tables |
+| `references/layout-archetypes.md` | 12 page composition patterns |
+| `references/typography.md` | 20 curated Google Font pairings |
+| `references/color-theory.md` | HSL color system, mood palettes, scale generation |
+| `scripts/helpers.ts` | Color conversion utilities (HEX/HSL/RGB) |
 
-## Output Structure
+## After Generating
 
-```
-{slug}-template/
-├── layout.json
-├── defaults.json
-├── template.config.json
-├── styles.css
-├── hero.jpg          (optional default hero image)
-└── README.md
-```
-
-## Reference
-
-- **Full documentation**: `SKILL.md`
-- **Helper functions**: `helpers.ts`
-- **Production example**: `../cannabizz-template/` (first template built on this system)
-- **Platform codebase**: `../../budstack-saas/nextjs_space/`
+1. Init git repo in the template directory
+2. Push to GitHub
+3. Upload via BudStack super admin → Templates → Upload from GitHub
+4. Preview at `/store/preview/{slug}`
+5. Tenants can clone and customize via their admin panel

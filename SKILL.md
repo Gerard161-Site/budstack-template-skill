@@ -1,285 +1,200 @@
-# BudStack Template Creator — Agent Skill
-
-Generate production-ready BudStack store templates using the **data-driven section system**. Templates are pure data (JSON + CSS) — NO React code. The platform's section registry renders everything.
-
-## How It Works
-
-```
-Designer describes a vibe
-  → Agent asks questions (name, colors, mood, sections)
-  → Agent generates 4 data files + optional hero image
-  → Files pushed to GitHub repo
-  → Super Admin uploads via Template Management
-  → Tenants clone, customize via /tenant-admin/branding
-```
-
-**Output**: A Git repo containing exactly these files:
-
-```
-{slug}-template/
-├── layout.json              # Section composition (what renders, in what order)
-├── defaults.json            # Design system + content (colors, fonts, copy, nav, footer)
-├── template.config.json     # Marketplace metadata (name, tags, description)
-├── styles.css               # Custom CSS (:root vars, scoped styles, animations)
-├── hero.jpg                 # (optional) Default hero image
-└── README.md                # Template documentation
-```
-
-**NO index.tsx. NO components/. NO React.** The platform renders sections from its own registry.
-
+---
+name: create-template
+description: >
+  Creative template designer for BudStacks.io cannabis SaaS platform. Generates unique,
+  production-ready storefront templates with varied layouts, section combinations, and design
+  treatments. Use when asked to create a template, design a storefront, build a new theme,
+  or make a cannabis brand template. Produces 4 pure data files (layout.json, defaults.json,
+  styles.css, template.config.json) — no React code.
 ---
 
-## Architecture: Data-Driven Templates
+# BudStacks Creative Template Designer
 
-### The Rendering Pipeline
+You are a senior UI/UX designer creating unique storefront templates for cannabis brands.
+Each template you create must feel like a distinct brand identity — not a reskin of the last one.
 
+## Design Philosophy
+
+**Every template is a brand story.** The layout, section order, typography, color rhythm, and
+whitespace all work together to communicate a mood. A luxury dispensary feels different from a
+street-culture cannabis brand. A medical clinic feels different from a wellness retreat.
+
+**Rules of creative variety:**
+- NEVER use the same section order twice in a row across templates
+- ALWAYS vary the hero type (split one time, video next, minimal next, fullscreen next)
+- ALTERNATE between content-heavy and minimal templates
+- MIX nav styles to match personality (dark glassmorphic for premium, transparent for airy, minimal for clean)
+- CREATE visual rhythm — alternate light/dark sections, vary density
+- THINK about pacing — what does the visitor see first, second, third?
+
+## System Architecture
+
+Templates are **pure data** — 4 files, no React code. The BudStacks platform renders them using
+pre-built section components from the Section Registry.
+
+**Output:** A directory with exactly these files:
 ```
-layout.json (S3)
-  → TemplateRenderer reads sections[]
-  → Each section.type → getSectionComponent() from section-registry
-  → Component receives unified SectionProps (tenant, designSystem, pageContent, etc.)
-  → styles.css injected as scoped CSS
-  → defaults.json provides fallback content + design tokens
-  → TenantThemeProvider applies designSystem as CSS variables
-```
-
-### Available Section Components
-
-Pick from these in `layout.json → sections[]`. Each renders a full responsive section.
-
-| Category | Component Name | Description |
-|----------|---------------|-------------|
-| **Heroes** | `HeroFullScreen` | Full-viewport hero with background image, gradient overlay, title/subtitle/CTA |
-| | `HeroSplit` | Side-by-side hero — image left, content right (or vice versa) |
-| | `HeroVideo` | Video background hero with overlay content |
-| | `HeroMinimal` | Clean, text-focused hero with subtle accent |
-| **Content** | `ValueProps` | 4-card grid of value propositions (icon + title + description) |
-| | `ProductShowcase` | Featured products grid pulled from tenant's catalog |
-| | `Testimonials` | Customer testimonial cards with ratings |
-| | `About` | Brand story section with mission statement |
-| | `Gallery` | Image gallery grid |
-| | `Stats` | Animated stat counters (e.g., "500+ Products", "10K+ Customers") |
-| | `FAQ` | Accordion-style FAQ section |
-| | `BlogFeed` | Latest 3 blog posts from tenant's blog |
-| | `Features` | Multi-item feature grid with icons |
-| **CTAs** | `CTABanner` | Full-width call-to-action banner |
-| | `CTAWithImage` | CTA section with side image |
-| | `CTASplit` | Split-layout CTA |
-| **Navigation** | `NavMinimal` | Clean, minimal nav bar |
-| | `NavFull` | Full navigation with logo, links, and CTA button |
-| | `NavTransparent` | Transparent nav that overlays hero |
-| **Footers** | `FooterSimple` | Minimal footer with copyright |
-| | `FooterFull` | Multi-column footer with link sections and disclaimer |
-
-### Section Props (What Every Section Receives)
-
-Every section component receives the same `SectionProps` object:
-
-```typescript
-{
-  tenant: {
-    businessName: string;
-    subdomain: string;
-    tagline?: string;
-    industry?: string;
-    // ... all tenant fields
-  };
-  consultationUrl: string;   // "/store/{subdomain}/consultation"
-  productsUrl: string;        // "/store/{subdomain}/products"
-  contactUrl: string;         // "/store/{subdomain}/contact"
-  aboutUrl: string;           // "/store/{subdomain}/about"
-  heroImageUrl?: string;      // Signed S3 URL (from hero.jpg or user upload)
-  logoUrl?: string;           // Signed S3 URL
-  designSystem?: object;      // From defaults.json → merged with tenant overrides
-  pageContent?: object;       // From defaults.json → merged with tenant overrides
-  navigation?: object;        // Nav links and CTA
-  footer?: object;            // Footer links, copyright, disclaimer
-  valueProps?: Array<{title, description, icon}>;
-  posts?: Array;              // Latest blog posts (for BlogFeed)
-  sectionConfig?: object;     // Per-section config from layout.json
-}
+template-name/
+  layout.json           # Which sections, in what order, with what config
+  defaults.json         # Design system tokens, content defaults, navigation, footer
+  styles.css            # CSS variables, scoped overrides, animations, utility classes
+  template.config.json  # Marketplace metadata
 ```
 
----
+**The platform handles:** Products, cart, checkout, auth, blog, contact, about, consultation pages.
+**You handle:** The home page experience — the first impression that makes a brand unforgettable.
 
-## Step-by-Step Workflow
+## Creative Workflow
 
-### Step 1: Interview the Designer
+### Phase 1: Brand Discovery (Interview)
 
-Ask these questions (present as choices where possible):
+**MANDATORY: You MUST complete this interview before writing ANY files.**
+**DO NOT skip this phase. DO NOT assume answers. ASK the user directly.**
+**Even if the user provides a brand name with context, ask what's missing.**
 
-1. **Template name** — What should this template be called?
-   - Example: "Zen Garden", "Urban Leaf", "Cloud Nine"
-   - Will generate slug automatically: "zen-garden", "urban-leaf", "cloud-nine"
+Use AskUserQuestion to gather these in 1-2 rounds:
 
-2. **Mood & Style** — Pick one or describe your own:
-   - Clean & Professional (light backgrounds, crisp typography)
-   - Bold & Energetic (saturated colors, strong contrast)
-   - Organic & Natural (earth tones, soft curves)
-   - Luxurious & Premium (dark backgrounds, gold/metallic accents)
-   - Playful & Young (neon colors, dark theme, fun copy)
-   - Dark & Moody (deep backgrounds, dramatic lighting)
-   - Custom (describe freely)
+**Round 1 — Identity & Mood:**
+1. **Brand name & vibe** — "What's the brand called and what's the feeling? (e.g., 'GreenLeaf — earthy apothecary meets modern wellness')"
+2. **Audience** — Medical patients? Recreational? Luxury? Street culture? Wellness seekers?
+3. **Visual references** — Any brands, websites, or aesthetics they admire?
 
-3. **Target audience** — Who is this store for?
-   - Medical patients (professional, trustworthy)
-   - Recreational consumers (fun, accessible)
-   - Wellness seekers (calming, natural)
-   - Premium buyers (luxury, exclusive)
-   - Young adults (trendy, social)
+**Round 2 — Design Preferences:**
+4. **Starting color** — A hex code, color name, or vibe ("forest green", "midnight blue", "#E8B931")
+5. **Content density** — Minimal (3-4 sections), standard (5-6), rich (7-8)?
+6. **Special needs** — Video hero? Blog feed? Stats? Image gallery? FAQ?
+7. **Hero images** — Does the user have images/artwork to include? (Drop them in assets/)
 
-4. **Primary brand color** — Provide a HEX color or describe (e.g., "forest green", "electric purple")
+**Skip rule:** Only skip a question if the user has EXPLICITLY answered it already in this conversation.
+After the interview, summarize your understanding back to the user before proceeding.
 
-5. **Content density** — How many sections on the home page?
-   - Minimal (3-4 sections): Hero + About + CTA
-   - Standard (5-6 sections): Hero + ValueProps + About + Features + CTA
-   - Rich (7+ sections): Hero + ValueProps + About + Features + Stats + FAQ + CTA
+**What NOT to ask:** Logo (uploaded via branding admin), page content beyond home.
 
-6. **Section picks** — Based on density, confirm:
-   - Hero style: `HeroFullScreen` / `HeroSplit` / `HeroVideo` / `HeroMinimal`
-   - Body sections: Select from content list above
-   - CTA style: `CTABanner` / `CTAWithImage` / `CTASplit`
-   - Navigation: `NavFull` / `NavMinimal` / `NavTransparent`
-   - Footer: `FooterFull` / `FooterSimple`
+### Phase 2: Design Decisions
 
-7. **Cultural feel** (optional) — Any specific vibe?
-   - Street/urban, clinical/medical, spa/wellness, farm-to-table, tech/modern
+**GATE CHECK: Did you complete Phase 1? If not, go back. No exceptions.**
 
-### Step 2: Generate Colors
+Before writing any files, make these creative choices. Present them to the user as a design brief
+and get approval before generating files. Document your reasoning.
 
-Convert the primary brand color to HSL and build a full palette.
+#### 2a. Choose a Layout Archetype
 
-**CRITICAL COLOR FORMAT**: All colors MUST be raw HSL channels. NO wrappers.
-```
-CORRECT:  "275 70% 55%"
-WRONG:    "hsl(275, 70%, 55%)"
-WRONG:    "#A333E6"
-```
+See `references/layout-archetypes.md` for 12 distinct patterns. Pick one that matches the brand,
+then CUSTOMIZE it — don't copy verbatim. Mix elements from multiple archetypes if the brand calls for it.
 
-**Color Generation Rules**:
+**Layout pacing principles:**
+- Start strong (hero sets the tone)
+- Build trust (social proof, values, about)
+- Create desire (product showcase, gallery, features)
+- Convert (CTA before footer)
+- Vary section backgrounds (light → dark → light creates rhythm)
 
-From the primary color (HEX → HSL):
+#### 2b. Choose Navigation Personality
 
-```
-Primary:    {H} {S}% {L}%              (the brand color)
-Secondary:  {H+30} {S-15}% {L}%        (complementary shift)
-Accent:     {H-20} {S+10}% {L+10}%     (pop color)
-```
+| Nav Style | Best For | Personality |
+|-----------|----------|-------------|
+| NavDark | Premium, luxury, medical authority | Dark glassmorphic floating bar, dual CTAs |
+| NavTransparent | Airy, lifestyle, image-heavy sites | Invisible until scroll, lets hero breathe |
+| NavFull | Professional, feature-rich, e-commerce | Solid, reliable, cart-focused |
+| NavMinimal | Clean, editorial, minimal brands | Simple, no clutter |
 
-For light themes:
-```
-Background: {H} 5% 97%
-Surface:    {H} 8% 99%
-Text:       {H} 15% 12%
-Heading:    {H} 20% 8%
-Border:     {H} 10% 90%
-```
+#### 2c. Choose Footer Personality
 
-For dark themes:
-```
-Background: {H} 15% 8%
-Surface:    {H} 12% 12%
-Text:       {H} 10% 80%
-Heading:    0 0% 100%
-Border:     {H} 15% 22%
-```
+| Footer | Best For | Personality |
+|--------|----------|-------------|
+| FooterBrand | Premium, established brands | Contact info, leaf icon headers, branded |
+| FooterFull | Feature-rich, multi-section sites | Comprehensive link columns |
+| FooterSimple | Minimal, clean brands | Just copyright and essentials |
 
-Generate full color scales (50-900) for the primary color:
-```
-50:  {H} {S}% 97%
-100: {H} {S}% 92%
-200: {H} {S}% 82%
-300: {H} {S}% 72%
-400: {H} {S}% 66%
-500: {H} {S}% {L}%    ← base
-600: {H} {S}% {L-10}%
-700: {H} {S}% {L-20}%
-800: {H} {S}% {L-30}%
-900: {H} {S}% {L-40}%
-```
+#### 2d. Build the Color System
 
-Generate shadows using RGB conversion of primary:
-```
-theme-sm:  0 2px 8px rgba(R, G, B, 0.08)
-theme-md:  0 4px 16px rgba(R, G, B, 0.12)
-theme-lg:  0 8px 32px rgba(R, G, B, 0.16)
-theme-xl:  0 12px 48px rgba(R, G, B, 0.20)
-theme-2xl: 0 20px 64px rgba(R, G, B, 0.24)
-```
+See `references/color-theory.md`. Don't just pick a primary and generate a scale.
+Think about:
+- **Contrast zones:** Which sections are dark? Which are light?
+- **Accent purpose:** What draws the eye? CTAs, icons, highlights?
+- **Mood expression:** Warm colors = energy, comfort. Cool colors = trust, calm.
+- **The "surface" color:** This is your section alternating color — make it subtle but distinct.
 
-### Step 3: Choose Fonts
+#### 2e. Choose Typography
 
-Pick a Google Fonts pairing that matches the mood. Load via `googleFontsUrl` in layout.json settings.
+See `references/typography.md` for 15+ pairings. Consider:
+- **Heading personality:** Serif = traditional/luxury. Geometric sans = modern/tech. Humanist sans = friendly.
+- **Weight contrast:** Bold headings + light body = dramatic. Medium headings + regular body = balanced.
+- **Letter spacing:** Tight = dense/editorial. Wide = airy/luxury. Tracked uppercase = authoritative.
 
-**Recommended Pairings**:
+### Phase 3: Generate Files
 
-| Mood | Heading Font | Body Font | Google Fonts URL |
-|------|-------------|-----------|-----------------|
-| Clean/Professional | Inter | Inter | `...family=Inter:wght@400;500;600;700;800&display=swap` |
-| Bold/Modern | Space Grotesk | DM Sans | `...family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap` |
-| Organic/Natural | Lora | Source Serif 4 | `...family=Lora:wght@400;500;600;700&family=Source+Serif+4:wght@400;600&display=swap` |
-| Luxury/Premium | Cormorant Garamond | Lato | `...family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@400;700&display=swap` |
-| Playful/Young | Outfit | Nunito | `...family=Outfit:wght@400;500;600;700;800&family=Nunito:wght@400;600;700&display=swap` |
-| Dark/Moody | Bebas Neue | Inter | `...family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap` |
-| Modern/Geometric | Sora | Inter | `...family=Sora:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap` |
-| Elegant/Serif | Playfair Display | Roboto | `...family=Playfair+Display:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap` |
+#### File 1: layout.json
 
-**IMPORTANT**: The branding form dropdown supports these font IDs: `inter`, `roboto`, `lato`, `montserrat`, `poppins`, `playfair`, `outfit`, `nunito`. If your heading or body font isn't in this list, the branding form will still work — it maps CSS font-family strings to IDs automatically. But sticking to these fonts gives the best user experience.
-
-### Step 4: Write layout.json
-
-This defines WHAT renders and in WHAT ORDER.
+This is the creative backbone — which sections appear and how they're configured.
 
 ```json
 {
   "version": "1.0.0",
-  "navigation": "NavFull",
+  "navigation": "NavDark",
   "sections": [
-    { "type": "HeroFullScreen", "id": "hero" },
-    { "type": "ValueProps", "id": "value-props" },
-    { "type": "About", "id": "about" },
-    { "type": "Features", "id": "features" },
-    { "type": "Stats", "id": "stats" },
-    { "type": "FAQ", "id": "faq" },
-    { "type": "CTABanner", "id": "cta" }
+    {
+      "type": "HeroSplit",
+      "id": "hero",
+      "config": {
+        "textAlign": "left",
+        "ctaText": "Book Consultation",
+        "secondaryCtaText": "View Products",
+        "secondaryCtaHref": "/products"
+      }
+    }
   ],
-  "footer": "FooterFull",
+  "footer": "FooterBrand",
   "settings": {
-    "wrapperClass": "template-{slug}",
+    "wrapperClass": "template-your-slug",
     "googleFontsUrl": "https://fonts.googleapis.com/css2?family=..."
   }
 }
 ```
 
-**Rules**:
-- `navigation`: One of `NavFull`, `NavMinimal`, `NavTransparent`
-- `sections[].type`: Must exactly match a key from the section registry (case-sensitive)
-- `sections[].id`: Unique identifier for each section (used for config lookup)
-- `sections[].visible`: Optional, set `false` to hide without removing
-- `footer`: One of `FooterFull`, `FooterSimple`
-- `settings.wrapperClass`: MUST be `template-{slug}` — used for CSS scoping
-- `settings.googleFontsUrl`: Full Google Fonts URL with all needed weights
+**Available section types and their key configs — see `references/component-catalog.md` for full details:**
 
-### Step 5: Write defaults.json
+**Heroes** (pick ONE):
+- `HeroFullScreen` — immersive, full-viewport, gradient/image bg. Config: textAlign, heroType, ctaText, secondaryCtaText
+- `HeroSplit` — two-column text+image. Config: title, subtitle, ctaText, secondaryCtaText
+- `HeroVideo` — video background with watermark overlay. Config: videoUrl, watermarkUrl, textAlign, overlayOpacity, ctaText
+- `HeroMinimal` — clean gradient, no image. Config: title, subtitle, ctaText
 
-This is the big one. It provides the complete design system and all default content.
+**Content** (pick 2-6):
+- `About` — two-column text+image with stat counters. Config: heading, content, imageUrl, stats
+- `ValueProps` — card grid (3 or 4 items). Config: heading, subtitle, items[]
+- `Features` — icon+text horizontal cards (3-6 items). Config: heading, subtitle, items[]
+- `ProductShowcase` — product category cards. Config: heading, subtitle, categories[]
+- `Testimonials` — star-rating review cards. Config: heading, subtitle, items[]
+- `Gallery` — masonry image grid. Config: heading, subtitle, items[]
+- `Stats` — animated number counters on gradient bg. Config: heading, items[]
+- `FAQ` — accordion. Config: heading, subtitle, items[]
+- `BlogFeed` — latest posts. Config: heading, subtitle
+- `ImageShowcase` — full-width bg image with overlay card. Config: heading, content, imageUrl, overlayStyle, ctaText
+
+**CTAs** (pick 0-2):
+- `CTABanner` — gradient banner. Config: heading, subtitle, ctaText
+- `CTAWithImage` — image bg with overlay. Config: heading, subtitle, ctaText, imageUrl
+- `CTASplit` — split text+steps+image. Config: heading, subtitle, ctaText, imageUrl
+
+**Section IDs:** Give each section a unique, semantic ID (e.g., "hero", "about", "values", "showcase", "reviews", "cta"). These are used for CSS scoping.
+
+#### File 2: defaults.json
+
+The complete design system + default content. This is what makes each template feel different.
 
 ```json
 {
-  "template": "{slug}",
-  "slug": "{slug}",
+  "template": "your-slug",
+  "slug": "your-slug",
   "logoPath": null,
-  "heroImagePath": "hero.jpg",
+  "heroImagePath": null,
   "heroVideoPath": null,
-  "primaryColor": "275 70% 55%",
-  "fontFamily": "'Nunito', sans-serif",
-
+  "primaryColor": "H S% L%",
+  "fontFamily": "full font stack",
   "designSystem": {
     "colors": {
-      "{brand-name}": {
-        "50": "...", "100": "...", "200": "...", "300": "...", "400": "...",
-        "500": "...", "600": "...", "700": "...", "800": "...", "900": "..."
-      },
+      "primary-scale": { "50": "...", ... "900": "..." },
       "primary": "H S% L%",
       "secondary": "H S% L%",
       "accent": "H S% L%",
@@ -293,173 +208,56 @@ This is the big one. It provides the complete design system and all default cont
       "error": "0 72% 51%",
       "info": "199 89% 48%"
     },
-    "typography": {
-      "fontFamily": {
-        "base": "'BodyFont', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        "heading": "'HeadingFont', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        "mono": "'Roboto Mono', 'Courier New', monospace"
-      },
-      "fontSize": {
-        "xs": "0.75rem", "sm": "0.875rem", "base": "1rem", "lg": "1.125rem",
-        "xl": "1.25rem", "2xl": "1.5rem", "3xl": "1.875rem", "4xl": "2.25rem",
-        "5xl": "3rem", "6xl": "3.75rem", "7xl": "4.5rem", "8xl": "6rem"
-      },
-      "lineHeight": {
-        "tight": "1.25", "snug": "1.375", "normal": "1.5",
-        "relaxed": "1.625", "loose": "2"
-      },
-      "letterSpacing": {
-        "tighter": "-0.05em", "tight": "-0.025em", "normal": "0",
-        "wide": "0.025em", "wider": "0.05em", "widest": "0.1em"
-      },
-      "fontWeight": {
-        "normal": "400", "medium": "500", "semibold": "600",
-        "bold": "700", "extrabold": "800"
-      }
-    },
-    "shadows": {
-      "theme-sm": "0 2px 8px rgba(R, G, B, 0.08)",
-      "theme-md": "0 4px 16px rgba(R, G, B, 0.12)",
-      "theme-lg": "0 8px 32px rgba(R, G, B, 0.16)",
-      "theme-xl": "0 12px 48px rgba(R, G, B, 0.20)",
-      "theme-2xl": "0 20px 64px rgba(R, G, B, 0.24)"
-    },
-    "gradients": {
-      "primary": "linear-gradient(135deg, hsl(H S% L%) 0%, hsl(H S% L-20%) 100%)",
-      "secondary": "linear-gradient(135deg, hsl(H S% L%) 0%, hsl(H S% L-20%) 100%)",
-      "hero-overlay": "linear-gradient(180deg, rgba(R, G, B, 0.6) 0%, rgba(R, G, B, 0.8) 100%)",
-      "card-hover": "linear-gradient(135deg, rgba(R, G, B, 0.1) 0%, rgba(R, G, B, 0.05) 100%)"
-    },
-    "spacing": {
-      "section": "5rem",
-      "container": "1.5rem",
-      "card": "2rem"
-    },
-    "borderRadius": {
-      "none": "0", "sm": "0.25rem", "md": "0.5rem", "lg": "0.75rem",
-      "xl": "1rem", "2xl": "1.5rem", "full": "9999px"
-    }
+    "typography": { ... },
+    "shadows": { ... },
+    "gradients": { ... },
+    "spacing": { "section": "5rem", "container": "1.5rem", "card": "2rem" },
+    "borderRadius": { "sm": "0.375rem", "md": "0.75rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px" }
   },
-
-  "valueProps": [
-    { "title": "...", "description": "...", "icon": "Sparkles" },
-    { "title": "...", "description": "...", "icon": "Shield" },
-    { "title": "...", "description": "...", "icon": "Zap" },
-    { "title": "...", "description": "...", "icon": "Truck" }
-  ],
-
+  "valueProps": [ ... ],
   "pageContent": {
-    "homeHeroTitle": "Your Main Headline",
-    "homeHeroSubtitle": "Supporting tagline",
-    "homeHeroDescription": "A longer description of the value proposition.",
-    "aboutMission": "The brand's mission statement and story."
+    "homeHeroTitle": "...",
+    "homeHeroSubtitle": "...",
+    "homeHeroDescription": "...",
+    "aboutMission": "..."
   },
-
   "navigation": {
-    "links": [
-      { "label": "Products", "href": "/products" },
-      { "label": "About", "href": "/about" },
-      { "label": "FAQ", "href": "/faq" },
-      { "label": "Contact", "href": "/contact" }
-    ],
-    "cta": { "label": "Get Started", "href": "/consultation" }
+    "links": [ { "label": "...", "href": "/..." } ],
+    "cta": { "label": "...", "href": "/consultation" },
+    "cta2": { "label": "...", "href": "/login" },
+    "showCart": true
   },
-
   "footer": {
-    "copyright": "\u00a9 {year} {businessName}. All rights reserved.",
-    "disclaimer": "Cannabis should only be used under the guidance of a licensed healthcare professional.",
-    "sections": [
-      {
-        "title": "Shop",
-        "links": [
-          { "label": "All Products", "href": "/products" },
-          { "label": "Popular", "href": "/products?filter=popular" }
-        ]
-      },
-      {
-        "title": "Company",
-        "links": [
-          { "label": "About Us", "href": "/about" },
-          { "label": "FAQ", "href": "/faq" }
-        ]
-      },
-      {
-        "title": "Legal",
-        "links": [
-          { "label": "Privacy Policy", "href": "/privacy" },
-          { "label": "Terms", "href": "/terms" },
-          { "label": "Compliance", "href": "/regulatory" }
-        ]
-      }
-    ]
+    "tagline": "...",
+    "disclaimer": "...",
+    "sections": [ { "title": "...", "links": [...] } ]
   }
 }
 ```
 
-**Content Guidelines**:
-- `homeHeroTitle`: 3-8 words, punchy, matches the mood
-- `homeHeroSubtitle`: 3-6 words, supporting the headline
-- `homeHeroDescription`: 1-2 sentences, explains the value
-- `aboutMission`: 2-3 sentences, brand story
-- `valueProps`: 4 items, each with Lucide icon name (e.g., "Shield", "Sparkles", "Zap", "Heart", "Star", "Check", "Truck", "Clock", "Leaf")
-- Navigation links: Products, About, FAQ, Contact are standard. Add blog link if template uses BlogFeed
-- Footer disclaimer: ALWAYS include cannabis compliance language
+**CRITICAL COLOR RULES:**
+- ALL colors MUST be raw HSL: `"178 48% 21%"`
+- NEVER hex: `"#2A3D3A"`
+- NEVER hsl() wrapper: `"hsl(178, 48%, 21%)"`
+- Use `references/color-theory.md` for scale generation
 
-**heroImagePath**: Set to `"hero.jpg"` if you include a default hero. Otherwise `null`. When a tenant clones, this seeds the hero image so the store isn't blank.
+**Navigation links** — always use relative paths starting with `/`:
+Standard pages: /products, /consultation, /about, /contact, /faq, /the-wire, /conditions, /login
+The platform prefixes these with `/store/{subdomain}/` automatically.
 
-### Step 6: Write template.config.json
+#### File 3: styles.css
 
-Marketplace metadata. This is what Super Admin sees when browsing templates.
-
-```json
-{
-  "id": "{slug}",
-  "slug": "{slug}",
-  "name": "Template Display Name",
-  "description": "2-3 sentence description of style, audience, and vibe.",
-  "version": "1.0.0",
-  "author": "BudStack Platform",
-  "category": "modern",
-  "tags": ["tag1", "tag2", "tag3", "tag4"],
-  "features": [
-    "Feature description 1",
-    "Feature description 2"
-  ],
-  "previewUrl": "/templates/{slug}/hero.jpg",
-  "thumbnailUrl": "/templates/{slug}/hero.jpg",
-  "screenshots": [],
-  "demoUrl": null,
-  "price": 0,
-  "isPremium": false,
-  "isActive": true,
-  "components": [],
-  "customization": {
-    "colors": { "primary": "#HEX", "secondary": "#HEX", "accent": "#HEX" },
-    "fonts": { "base": "'BodyFont', sans-serif", "heading": "'HeadingFont', sans-serif" }
-  },
-  "dependencies": ["framer-motion", "lucide-react"],
-  "accessibility": { "wcag_level": "AA", "screen_reader_tested": true }
-}
-```
-
-**Category options**: `modern`, `medical`, `wellness`, `professional`, `minimal`
-**Tags**: 4-8 descriptive tags for marketplace search
-
-### Step 7: Write styles.css
-
-Custom CSS that scopes all styling to this template. Uses `:root` for CSS variables and `.template-{slug}` for scoped overrides.
+This is where templates truly differentiate. Don't just swap colors — create a unique CSS treatment.
 
 ```css
-@import url('https://fonts.googleapis.com/css2?family=...&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=...');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ===== {Template Name} Styles ===== */
-
+/* ===== Template Styles ===== */
 :root {
-  /* Core Colors — RAW HSL, NO hsl() wrapper */
   --tenant-color-primary: H S% L%;
   --tenant-color-secondary: H S% L%;
   --tenant-color-accent: H S% L%;
@@ -468,342 +266,200 @@ Custom CSS that scopes all styling to this template. Uses `:root` for CSS variab
   --tenant-color-text: H S% L%;
   --tenant-color-heading: H S% L%;
   --tenant-color-border: H S% L%;
-
-  /* Fonts */
-  --tenant-font-base: 'BodyFont', sans-serif;
-  --tenant-font-heading: 'HeadingFont', sans-serif;
-}
-
-/* Scoped Template Styles */
-.template-{slug} {
-  font-family: var(--tenant-font-base);
-  background-color: hsl(var(--tenant-color-background));
-  color: hsl(var(--tenant-color-text));
-}
-
-.template-{slug} h1,
-.template-{slug} h2,
-.template-{slug} h3,
-.template-{slug} h4 {
-  font-family: var(--tenant-font-heading);
-  color: hsl(var(--tenant-color-heading));
-}
-
-/* Button Styles */
-.template-{slug} .btn-primary {
-  background-color: hsl(var(--tenant-color-primary));
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 9999px;
-  font-weight: 700;
-  transition: all 0.2s;
-}
-
-.template-{slug} .btn-primary:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 25px hsl(var(--tenant-color-primary) / 0.4);
-}
-
-/* Section Spacing */
-.template-{slug} .section-padding {
-  padding: 5rem 0;
-}
-
-/* Custom Animations */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  --tenant-font-base: 'Font Name', fallbacks;
+  --tenant-font-heading: 'Font Name', fallbacks;
 }
 ```
 
-**CSS Rules**:
-1. `:root` vars are RAW HSL channels: `--tenant-color-primary: 275 70% 55%;`
-2. Components reference them wrapped: `hsl(var(--tenant-color-primary))`
-3. Opacity: `hsl(var(--tenant-color-primary) / 0.5)`
-4. ALL template-specific styles scoped under `.template-{slug}`
-5. The `@import url(...)` for Google Fonts MUST match `googleFontsUrl` in layout.json
-6. Include `@tailwind base; @tailwind components; @tailwind utilities;`
-7. Add unique utility classes, animations, or effects that make this template special
+**Creative CSS techniques to differentiate templates:**
 
-### Step 8: Create Git Repo
-
-Output location: `/Users/gkavanagh/Development/HealingBuds/templates/{slug}-template/`
-
-```bash
-mkdir -p /Users/gkavanagh/Development/HealingBuds/templates/{slug}-template
-# Write all files there
-cd /Users/gkavanagh/Development/HealingBuds/templates/{slug}-template
-git init
-git add .
-git commit -m "Initial commit: {Template Name} template"
-gh repo create AutomatosAI/{slug}-template --public --source=. --remote=origin --push
-```
-
-### Step 9: Validate
-
-Run through this checklist before declaring done:
-
-**File Completeness**:
-- [ ] `layout.json` exists with valid section types
-- [ ] `defaults.json` exists with full designSystem + pageContent
-- [ ] `template.config.json` exists with metadata
-- [ ] `styles.css` exists with :root vars and scoped styles
-- [ ] `README.md` exists
-
-**Color Validation**:
-- [ ] ALL colors in raw HSL format (no hex, no rgb, no `hsl()` wrapper)
-- [ ] Primary color scale complete (50-900)
-- [ ] Shadow RGB values match primary color
-- [ ] Gradient HSL values match color scheme
-- [ ] Light/dark theme colors are internally consistent
-
-**Font Validation**:
-- [ ] Google Fonts URL in both layout.json AND styles.css @import
-- [ ] Font family strings in defaults.json include fallback stack
-- [ ] `--tenant-font-base` and `--tenant-font-heading` set in styles.css :root
-
-**Content Validation**:
-- [ ] No placeholder text remaining
-- [ ] All valueProps have valid Lucide icon names
-- [ ] Navigation links use relative paths (e.g., `/products` not full URLs)
-- [ ] Footer includes compliance disclaimer
-- [ ] `wrapperClass` in layout.json matches CSS scoping class
-
-**Section Validation**:
-- [ ] Every `sections[].type` in layout.json exists in section registry
-- [ ] Navigation and footer types exist in section registry
-- [ ] Section IDs are unique
-
-### Step 10: Upload to BudStack
-
-After pushing to GitHub:
-
-1. Go to **Super Admin → Store Templates** (`/super-admin/templates`)
-2. Click **"Upload New Template"**
-3. Enter the GitHub URL: `https://github.com/AutomatosAI/{slug}-template.git`
-4. Structure type: **"Default (BudStack)"**
-5. Click **Upload**
-
-The upload process:
-- Downloads ZIP from GitHub
-- Validates `template.config.json`
-- Uploads ALL files to S3 at `templates/{slug}/`
-- Creates database record
-- Template appears in marketplace
-
-After upload:
-- Go to **Template Management** → verify the card shows
-- Upload a preview image via the edit button (screenshot of the rendered store)
-- Tenants can now clone the template
-
----
-
-## What Happens When a Tenant Clones
-
-Understanding this helps you write better defaults:
-
-1. Clone API copies S3 files: `templates/{slug}/` → `tenants/{id}/templates/{timestamp}/`
-2. Reads `defaults.json` from source
-3. Seeds `tenant_templates` DB record with:
-   - `designSystem` → from defaults.json
-   - `pageContent` → from defaults.json
-   - `navigation` → from defaults.json
-   - `footer` → from defaults.json
-   - `heroImageUrl` → resolved from `heroImagePath` in defaults.json
-4. The branding form (`/tenant-admin/branding`) reads these seeded values
-5. Colors are converted HSL → hex for the color picker display
-6. Tenant edits are saved back (deep-merged over template defaults)
-
-**This means**: Whatever you put in defaults.json is what the tenant sees in their branding form on first load. Make it complete and polished — it's the first impression.
-
----
-
-## Branding Form Fields (What Tenants Can Customize)
-
-The branding form at `/tenant-admin/branding` has 6 tabs:
-
-### Design Tab
-- Business name, tagline
-- Template style selector
-- Logo upload, hero image upload, favicon upload
-
-### Colors Tab
-- Primary color (color picker)
-- Secondary color
-- Accent color
-- Background color
-- Text color
-- Heading color
-
-### Typography Tab
-- Body font (dropdown): inter, roboto, lato, montserrat, poppins, playfair, outfit, nunito
-- Heading font (same dropdown)
-- Font size: small, medium, large
-
-### Layout Tab
-- Button style: rounded, square, pill
-- Border radius: none, small, medium, large
-- Spacing: compact, normal, comfortable
-- Shadow style: none, soft, medium, bold
-
-### Content Tab
-- Home hero title, subtitle, description, CTA text
-- About mission, vision, story
-- Contact phone, email, address, hours
-
-### Advanced Tab
-- Custom CSS textarea
-- Live preview link
-
----
-
-## CSS Variable System (How Theming Works)
-
-The `TenantThemeProvider` applies design tokens as CSS variables on a scoped container:
-
-```
-defaults.json designSystem.colors.primary = "275 70% 55%"
-  → TenantThemeProvider reads this
-  → Sets --tenant-color-primary: 275 70% 55% on .tenant-theme-container
-  → Your styles.css uses: hsl(var(--tenant-color-primary))
-  → When tenant changes to "#FF0000" via branding form
-  → formatColorValue() converts to raw HSL
-  → Override applies via inline style
-```
-
-**Variables applied by TenantThemeProvider**:
+1. **Dark section scoping** — Override CSS vars per section ID:
 ```css
-/* Colors */
---tenant-color-primary
---tenant-color-secondary
---tenant-color-accent
---tenant-color-background
---tenant-color-surface
---tenant-color-text
---tenant-color-heading
---tenant-color-border
-
-/* Tailwind integration */
---primary, --secondary, --accent, --background, --foreground
-
-/* Typography */
---tenant-font-body
---tenant-font-heading
---tenant-font-size-base
-
-/* Layout */
---tenant-border-radius
---tenant-button-radius
---tenant-spacing-scale
---tenant-shadow
---tenant-button-padding
---tenant-button-font-size
+.template-slug #values {
+  --tenant-color-surface: 210 20% 15%;
+  --tenant-color-heading: 0 0% 100%;
+  --tenant-color-text: 0 0% 90%;
+}
 ```
 
-**Key insight**: Your `:root` CSS vars in styles.css are the BASE defaults. TenantThemeProvider OVERRIDES them via inline styles on a container div. So your styles.css provides the "out of the box" look, and tenant customization layers on top.
-
----
-
-## Store URL Pattern
-
-All links in navigation and footer use relative paths. The platform automatically prefixes them with `/store/{subdomain}/`:
-
-```
-In defaults.json: { "href": "/products" }
-Rendered as:      /store/my-store/products
+2. **Footer dark treatment** — Always override for dark-bg footers:
+```css
+.template-slug footer {
+  --tenant-color-surface: H S% L%;
+  --tenant-color-background: H S% L%;
+  --tenant-color-heading: 0 0% 100%;
+}
 ```
 
-Standard pages available:
-- `/products` — Product catalog
-- `/consultation` — Book consultation
-- `/about` — About page
-- `/contact` — Contact page
-- `/faq` — FAQ page
-- `/privacy` — Privacy policy
-- `/terms` — Terms of service
-- `/regulatory` — Compliance/regulatory info
-
----
-
-## Common Pitfalls
-
-1. **Using hex colors in defaults.json** → Must be raw HSL: `"275 70% 55%"`
-2. **Adding hsl() wrapper** → WRONG: `"hsl(275 70% 55%)"`, RIGHT: `"275 70% 55%"`
-3. **Writing React components** → Templates are DATA ONLY. The platform renders.
-4. **Forgetting heroImagePath** → Without it, fresh clones show no hero image
-5. **Mismatching wrapperClass** → `layout.json settings.wrapperClass` MUST match CSS scoping class
-6. **Wrong section type names** → Case-sensitive, must match registry exactly (e.g., `HeroFullScreen` not `heroFullScreen`)
-7. **Missing Google Fonts URL** → Must be in BOTH layout.json settings AND styles.css @import
-8. **Hardcoding tenant names** → Use `{businessName}` and `{year}` placeholders in footer
-9. **Using full URLs in nav** → Use relative: `/products` not `https://example.com/products`
-10. **Forgetting compliance disclaimer** → Every cannabis template needs one in the footer
-
----
-
-## Helper Functions
-
-Available in `./helpers.ts` for programmatic generation:
-
-```typescript
-hexToHSL("#A333E6")              // → "275 70% 55%"
-hslToRGB("275 70% 55%")          // → { r: 163, g: 51, b: 230 }
-hslToRGBString("275 70% 55%")    // → "163, 51, 230"
-generateColorScale("275 70% 55%") // → { "50": "275 70% 97%", ..., "900": "275 70% 15%" }
-generateShadows("275 70% 55%")    // → { "theme-sm": "0 2px 8px rgba(163, 51, 230, 0.08)", ... }
-generateGradients("275 70% 55%")  // → { "primary": "linear-gradient(...)", ... }
-validateHSL("275 70% 55%")        // → true
-validateSlug("zen-garden")        // → true
-findAndReplace(content, { old: new })
-findPlaceholders(content)         // → ["template-slug", ...] if any remain
+3. **Custom shadows** — Brand-tinted shadows:
+```css
+.template-slug {
+  --shadow-card: 0 0 0 1px rgba(0,0,0,0.03), 0 2px 4px rgba(R,G,B,0.05);
+  --shadow-elegant: 0 8px 24px -4px rgba(R,G,B,0.08);
+}
 ```
 
----
-
-## Reference: CannaBizz Template
-
-The CannaBizz template is the first production template built on this system. Use it as a reference for structure and completeness, but NEVER copy its content or brand identity.
-
-**What CannaBizz does well** (emulate these patterns):
-- Full color scale for the primary brand color
-- Dark theme with proper contrast (light text on dark background)
-- Custom animations (fadeInUp, neonPulse)
-- Scoped CSS under `.template-cannabizz`
-- Hero image bundled as `hero.jpg`
-- Rich section composition (7 sections)
-- Fun, audience-appropriate copy
-- Complete footer with 3 link sections
-
-**CannaBizz specs** (for reference, don't copy):
-- Slug: `cannabizz`
-- Style: Playful neon dark theme
-- Colors: Purple primary (275 70% 55%), Green secondary (145 80% 55%), Blue accent (210 100% 65%)
-- Fonts: Outfit (headings) / Nunito (body)
-- Sections: HeroFullScreen, ValueProps, About, Features, Stats, FAQ, CTABanner
-- Nav: NavFull, Footer: FooterFull
-
----
-
-## Output Summary
-
-When complete, confirm with the designer:
-
+4. **Glassmorphism** (for premium feels):
+```css
+.template-slug .btn-glass {
+  backdrop-filter: blur(24px);
+  background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+  border: 1px solid rgba(255,255,255,0.4);
+}
 ```
-Template: {name}
-Slug: {slug}
-Location: /Users/gkavanagh/Development/HealingBuds/templates/{slug}-template/
-GitHub: https://github.com/AutomatosAI/{slug}-template
 
-Files:
-  layout.json      — {N} sections ({list section types})
-  defaults.json    — {theme description} ({primary color})
-  template.config  — Marketplace: {category}, {N} tags
-  styles.css       — {font pairing}, {animation count} animations
-  hero.jpg         — {included/not included}
-
-Next Steps:
-1. Push to GitHub (done automatically if gh CLI available)
-2. Super Admin → Store Templates → Upload New Template
-3. Paste GitHub URL, select "Default (BudStack)"
-4. After upload, edit the template card to add a preview screenshot
-5. Tenants can clone from Template Marketplace
+5. **Hover animations** — Vary by personality:
+```css
+.template-slug .hover-lift:hover { transform: translateY(-2px); }  /* subtle */
+.template-slug .hover-lift:hover { transform: translateY(-4px) scale(1.01); }  /* energetic */
 ```
+
+6. **Custom keyframe animations** for unique motion feel
+
+7. **Section padding overrides** in layout.json settings:
+```json
+"sectionPadding": "2rem/3rem/3.5rem"  // mobile/sm/md
+```
+
+#### File 4: template.config.json
+
+```json
+{
+  "id": "template-slug",
+  "slug": "template-slug",
+  "name": "Display Name",
+  "description": "One-liner describing the visual identity and target audience",
+  "category": "medical|wellness|modern|luxury|street|editorial",
+  "tags": ["relevant", "descriptive", "keywords"],
+  "features": ["Key visual feature 1", "Key visual feature 2", "Key visual feature 3"],
+  "author": "BudStacks Platform",
+  "version": "1.0.0"
+}
+```
+
+### Phase 4: CSS Scoping for Dark/Light Sections
+
+Any section on a dark background needs its CSS variables overridden. The platform uses
+`--tenant-color-heading` and `--tenant-color-text` which default to dark values for light backgrounds.
+
+**Pattern:** Target the section by its `id` from layout.json:
+```css
+/* Dark section: override to white text */
+.template-slug #stats {
+  --tenant-color-heading: 0 0% 100%;
+  --tenant-color-text: 0 0% 90%;
+}
+
+/* Cards inside dark section: restore dark text on white card bg */
+.template-slug #values .rounded-2xl {
+  --tenant-color-heading: 210 40% 20%;
+  --tenant-color-text: 0 0% 17%;
+}
+```
+
+**Sections that commonly need dark treatment:**
+- `Stats` (has gradient primary→secondary background)
+- `ValueProps` (when given a dark surface override)
+- `CTABanner` (has gradient primary→secondary background)
+- `ImageShowcase` (when using dark overlay)
+- Footer (always dark)
+
+### Phase 5: Assets & Images
+
+**CRITICAL: Templates without images look like blank garbage.** Gradient placeholders are NOT acceptable
+for a finished template. Every template MUST ship with images.
+
+**How assets work:**
+- Create an `assets/` directory inside the template
+- Reference image paths as relative: `"assets/hero.jpg"`, `"assets/lab-scene.jpg"`
+- `heroImagePath` in defaults.json: `"assets/hero.jpg"` (NOT null)
+- Section configs: `"imageUrl": "assets/about-photo.jpg"`
+- When uploaded to S3, the entire `assets/` directory is uploaded recursively
+- The platform signs these relative paths at render time
+
+**If the user has artwork/screenshots:**
+- Copy them directly into `assets/` with descriptive names
+- Reference them in the appropriate configs
+
+**If NO images are available yet:**
+- Still create the `assets/` directory with a `.gitkeep`
+- Set paths to reference expected filenames (e.g., `"assets/hero.jpg"`)
+- Tell the user EXACTLY which images they need to add and at what dimensions
+
+**Asset naming convention:**
+```
+assets/
+  hero.jpg          — HeroSplit/HeroFullScreen right panel or background
+  lab-scene.jpg     — ImageShowcase background
+  about.jpg         — About section image
+  consultation.jpg  — CTASplit/CTAWithImage image
+  gallery-1.jpg     — Gallery items
+  gallery-2.jpg
+```
+
+### Phase 6: Validate
+
+**Checklist before delivery:**
+- [ ] All colors are raw HSL (no hex, no hsl() wrapper)
+- [ ] `wrapperClass` in layout.json matches CSS class prefix
+- [ ] Google Fonts URL in BOTH layout.json settings AND styles.css @import
+- [ ] Footer has dark CSS scoping (heading: white)
+- [ ] Stats/CTABanner have dark CSS scoping if used
+- [ ] Navigation links use relative paths (/products, not https://...)
+- [ ] `heroImagePath` references an asset (NOT null unless no hero image)
+- [ ] Section imageUrl paths reference files in assets/
+- [ ] `assets/` directory exists with actual images or .gitkeep
+- [ ] Section IDs are unique and semantic
+- [ ] template.config.json slug matches defaults.json slug
+- [ ] No React code anywhere — pure data files only
+
+### Phase 7: Uniqueness Check
+
+**MANDATORY: Before outputting, compare against existing templates.**
+
+Read the layout.json of the 2-3 most recent templates in `/Users/gkavanagh/Development/HealingBuds/templates/`
+and verify your new template is STRUCTURALLY DIFFERENT:
+
+- Different hero type from the last template?
+- Different nav component?
+- Different footer component?
+- At least 2 sections that the last template doesn't use?
+- Different visual rhythm (light/dark pattern)?
+
+If your template is too similar, go back and redesign. The whole point is variety.
+
+### Phase 8: Output & Next Steps
+
+Output to the current working directory or a `templates/` directory if one exists nearby.
+If unsure, ask the user where to output.
+
+Then guide the user:
+1. Initialize git repo: `cd template-name && git init && git add . && git commit -m "Initial template"`
+2. Push to GitHub (create repo)
+3. Upload via BudStacks super admin → Templates → Upload from GitHub
+4. Preview at `/store/preview/{slug}`
+
+## Creative Constraints
+
+**DO:**
+- Vary layouts dramatically between templates
+- Use different hero types for different moods
+- Create unique color stories (not just "blue version" and "green version")
+- Think about visual rhythm and pacing
+- Match typography to brand personality
+- Use CSS scoping creatively for section-level treatments
+- Write content that matches the brand voice
+- Include actual images in assets/ — templates without images look broken
+- Use ImageShowcase, Gallery, CTASplit, CTAWithImage — the visual-heavy components most templates ignore
+
+**DON'T:**
+- Copy the same section order every time
+- Use the same nav+footer combo repeatedly
+- Write generic "Lorem ipsum" content
+- Add React components or .tsx files
+- Reference absolute URLs for images
+- Use hex colors anywhere in the data files
+- Include pages beyond the home page
+- Over-engineer — keep sections to 3-8 per template
+- Set heroImagePath to null — always reference an asset
+- Default to HeroFullScreen every time — use HeroSplit, HeroVideo, HeroMinimal
