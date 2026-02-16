@@ -1,5 +1,5 @@
 ---
-name: create-template
+name: create-budstacks-template
 description: >
   Creative template designer for BudStacks.io cannabis SaaS platform. Generates unique,
   production-ready storefront templates with varied layouts, section combinations, and design
