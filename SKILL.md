@@ -242,8 +242,82 @@ The complete design system + default content. This is what makes each template f
 - Use `references/color-theory.md` for scale generation
 
 **Navigation links** — always use relative paths starting with `/`:
-Standard pages: /products, /consultation, /about, /contact, /faq, /the-wire, /conditions, /login
-The platform prefixes these with `/store/{subdomain}/` automatically.
+The platform prefixes these with the tenant base path automatically.
+
+**Available Pages (all routes handled by the platform):**
+
+| Page | Path | Description |
+|------|------|-------------|
+| Home | `/` | Storefront homepage |
+| Products | `/products` | Product catalog |
+| Product Detail | `/products/[id]` | Single product |
+| Conditions | `/conditions` | Medical conditions |
+| Condition Detail | `/conditions/[id]` | Single condition |
+| The Wire | `/the-wire` | Blog/news |
+| Blog Post | `/the-wire/[slug]` | Single post |
+| About | `/about` | Company info |
+| Contact | `/contact` | Contact form |
+| Consultation | `/consultation` | Book consultation |
+| FAQ | `/faq` | FAQ page |
+| How It Works | `/how-it-works` | Process explainer |
+| Cart | `/cart` | Shopping cart |
+| Checkout | `/checkout` | Checkout flow |
+| Login | `/login` | Patient login |
+| Register | `/register` | Registration |
+| Dashboard | `/dashboard` | Patient dashboard |
+| Settings | `/settings` | Account settings |
+| Privacy | `/privacy` | Privacy policy |
+| Terms | `/terms` | Terms of service |
+| Regulatory | `/regulatory` | Compliance info |
+
+**Default Top Navigation:**
+```json
+{
+  "links": [
+    { "label": "Conditions", "href": "/conditions" },
+    { "label": "Products", "href": "/products" },
+    { "label": "The Wire", "href": "/the-wire" },
+    { "label": "About", "href": "/about" },
+    { "label": "Contact", "href": "/contact" }
+  ],
+  "cta": { "label": "Check Eligibility", "href": "/consultation" },
+  "cta2": { "label": "Patient Login", "href": "/login" },
+  "showCart": true
+}
+```
+
+**Default Footer Sections:**
+```json
+{
+  "sections": [
+    {
+      "title": "Company",
+      "links": [
+        { "label": "About Us", "href": "/about" },
+        { "label": "Our Products", "href": "/products" },
+        { "label": "The Wire", "href": "/the-wire" },
+        { "label": "Contact", "href": "/contact" }
+      ]
+    },
+    {
+      "title": "Resources",
+      "links": [
+        { "label": "Patient Access", "href": "/consultation" },
+        { "label": "Conditions Treated", "href": "/conditions" },
+        { "label": "FAQ", "href": "/faq" }
+      ]
+    },
+    {
+      "title": "Legal",
+      "links": [
+        { "label": "Privacy Policy", "href": "/privacy" },
+        { "label": "Terms of Service", "href": "/terms" },
+        { "label": "Regulatory", "href": "/regulatory" }
+      ]
+    }
+  ]
+}
+```
 
 #### File 3: styles.css
 

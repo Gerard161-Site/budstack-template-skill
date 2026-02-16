@@ -269,6 +269,10 @@ Floating glassmorphic dark bar with dual CTAs and shrink-on-scroll.
 - `cta2` — secondary CTA: `{ label, href }` (glass pill style)
 - `showCart` — boolean (default true)
 
+**Default links:** `["/conditions", "/products", "/the-wire", "/about", "/contact"]`
+**Default cta:** `{ "label": "Check Eligibility", "href": "/consultation" }`
+**Default cta2:** `{ "label": "Patient Login", "href": "/login" }`
+
 **Visual:** Fixed with margin from edges, rounded corners (16px→12px on scroll), dark sage backdrop (rgba(42,61,58)), backdrop-filter blur. Logo + brand shrink on scroll. Uppercase brand text.
 **Best for:** Premium, luxury, medical authority, dark themes.
 
@@ -312,6 +316,8 @@ Premium branded footer with contact icons and leaf section headers.
 - `sections[]` — link columns with `{ title, links[] }`
 - Also reads `tenant.businessAddress` and `tenant.contactEmail`
 
+**Default sections:** Company (`/about, /products, /the-wire, /contact`), Resources (`/consultation, /conditions, /faq`), Legal (`/privacy, /terms, /regulatory`)
+
 **Visual:** Brand column (logo + tagline + MapPin address + Mail email), 3 link columns with Leaf icon headers, disclaimer, copyright bar.
 **Best for:** Established brands, premium, full contact info.
 
@@ -322,6 +328,8 @@ Multi-section footer with brand column and link columns.
 - `tagline`, `disclaimer`
 - `sections[]`
 
+**Default sections:** Quick Links (`/products, /about, /the-wire, /contact`), Support (`/faq, /consultation, /conditions`), Legal (`/privacy, /terms, /regulatory`)
+
 **Visual:** Brand column (col-span-2) + 3 link columns. "Powered by BudStacks" in bottom bar. Dark bg.
 **Best for:** Feature-rich sites, standard professional footer.
 
@@ -330,6 +338,8 @@ Minimal footer with just copyright and links.
 
 **Config (via defaults.json footer):**
 - `links[]`
+
+**Default links:** `["/privacy", "/terms", "/contact"]`
 
 **Visual:** Single line, copyright left, 3 links right. Border-top.
 **Best for:** Minimal sites, editorial, clean designs.
