@@ -154,9 +154,14 @@ This is the creative backbone — which sections appear and how they're configur
 
 **Available section types and their key configs — see `references/component-catalog.md` for full details:**
 
+**Universal Premium Controls (Can be added to ANY section's config):**
+- `"animation"`: "fade-up" | "fade-left" | "fade-right" | "zoom-in" | "flip-up"
+- `"dividerTop"` & `"dividerBottom"`: "wave" | "tilt" | "triangle" | "curve" | "clouds"
+- `"dividerColor"` & `"dividerHeight"` (e.g., "100px")
+
 **Heroes** (pick ONE):
-- `HeroFullScreen` — immersive, full-viewport, gradient/image bg. Config: textAlign, heroType, ctaText, secondaryCtaText
-- `HeroSplit` — two-column text+image. Config: title, subtitle, ctaText, secondaryCtaText
+- `HeroFullScreen` — immersive, full-viewport, gradient/image bg. Config: textAlign, heroType, ctaText, secondaryCtaText, heroHeight ("100vh" | "80vh" | "600px"), paddingTop, paddingBottom, overlayStyle ("dark" | "glass" | "gradient")
+- `HeroSplit` — two-column text+image. Config: title, subtitle, ctaText, secondaryCtaText, contentPosition ("left" | "right")
 - `HeroVideo` — video background with watermark overlay. Config: videoUrl, watermarkUrl, textAlign, overlayOpacity, ctaText
 - `HeroMinimal` — clean gradient, no image. Config: title, subtitle, ctaText
 
@@ -219,7 +224,17 @@ The complete design system + default content. This is what makes each template f
     "homeHeroTitle": "...",
     "homeHeroSubtitle": "...",
     "homeHeroDescription": "...",
-    "aboutMission": "..."
+    "aboutMission": "...",
+    "educationHotspots": [
+      {
+        "id": "spot1",
+        "targetSectionId": "hero",
+        "x": 25,
+        "y": 50,
+        "title": "Premium Quality",
+        "description": "Information about this hotspot."
+      }
+    ]
   },
   "navigation": {
     "links": [ { "label": "...", "href": "/..." } ],
@@ -373,10 +388,17 @@ This is where templates truly differentiate. Don't just swap colors — create a
 }
 ```
 
-4. **Glassmorphism** (for premium feels):
+4. **Glassmorphism** (for premium feels): Built into the template engine!
+Use `overlayStyle: "glass"` in Hero configs, or apply `.glass-panel` class.
+Override the blur tokens in your root block if desired:
 ```css
+:root {
+  --tenant-blur-sm: 8px;
+  --tenant-blur-md: 16px;
+  --tenant-blur-lg: 24px;
+}
 .template-slug .btn-glass {
-  backdrop-filter: blur(24px);
+  backdrop-filter: blur(var(--tenant-blur-md));
   background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
   border: 1px solid rgba(255,255,255,0.4);
 }
