@@ -4,8 +4,10 @@ description: >
   Creative template designer for BudStacks.io cannabis SaaS platform. Generates unique,
   production-ready storefront templates with varied layouts, section combinations, and design
   treatments. Use when asked to create a template, design a storefront, build a new theme,
-  or make a cannabis brand template. Produces 4 pure data files (layout.json, defaults.json,
-  styles.css, template.config.json) — no React code.
+  or make a cannabis brand template. Supports TWO input modes: (1) Manual brand interview,
+  (2) Figma URL import via Figma MCP server — reads a Figma design file and intelligently
+  maps it to BudStacks sections, colors, typography, and layout. Produces 4 pure data files
+  (layout.json, defaults.json, styles.css, template.config.json) — no React code.
 ---
 
 # BudStacks Creative Template Designer
@@ -46,7 +48,181 @@ template-name/
 
 ## Creative Workflow
 
-### Phase 1: Brand Discovery (Interview)
+### Phase 1: Brand Discovery
+
+There are TWO paths into Phase 1. Detect which one based on user input:
+
+- **Path A: Figma Import** — User provides a Figma URL (contains `figma.com/design/` or `figma.com/file/`)
+- **Path B: Manual Interview** — No Figma URL provided, gather info via interview
+
+---
+
+#### Path A: Figma Import (via Figma MCP Server)
+
+**When the user provides a Figma URL, use this path. Skip the interview entirely.**
+
+**Prerequisites:** The `figma` MCP server must be configured and available.
+
+**Step 1 — Extract the Figma file key from the URL:**
+The URL format is `https://www.figma.com/design/{FILE_KEY}/...` or `https://www.figma.com/file/{FILE_KEY}/...`
+Extract the `FILE_KEY` portion (e.g., `HqvNJqJy8Xvu3KWYu8QLUV`).
+
+**Step 2 — Get a VISUAL REFERENCE first (MANDATORY):**
+
+**Before interpreting any structured data, you MUST see the design visually.** Structured JSON data
+tells you what nodes exist. A screenshot tells you what the design actually LOOKS like — light vs
+dark sections, visual rhythm, spacing, composition, how images sit in context.
+
+**Method A: Export the root frame as a rendered PNG** using `download_figma_images`:
+```
+download_figma_images(fileKey, nodes=[{nodeId: ROOT_FRAME_ID, fileName: "design-reference.png"}])
+```
+When you pass a nodeId **WITHOUT** an `imageRef`, the Figma API renders the entire node WITH ALL
+children composed into a single flat image — like a screenshot. Use this for the full-page reference.
+
+**Method B: Ask the user for a screenshot** — If the API is rate-limited or the frame is too large,
+ask the user to export from Figma (Select frame → Export → PNG/JPG). A screenshot is equally valuable.
+
+**Read the screenshot with the Read tool** before making ANY design decisions. This is non-negotiable.
+
+**Step 2b — Read structured design data:**
+
+Use **`get_figma_data`** with the file key and node ID. Returns: hierarchy, component names, text
+content, layout rules, spacing, image references, and design tokens.
+
+**Step 2c — Build a section light/dark map (MANDATORY before generating files):**
+
+Cross-reference the screenshot with the structured data. For EACH section group, determine:
+
+| Question | How to tell from data | How to tell from screenshot |
+|---|---|---|
+| Light or dark bg? | Text fills: `#000000` = light bg, `#FFFFFF` = dark bg | Visually obvious |
+| Has bg image? | RECTANGLE child with `fills[].type === "IMAGE"` | Photo visible behind content |
+| Heading color? | Heading TEXT node fill color | Contrast against background |
+| Body text color? | Body TEXT node fill color | Readability check |
+
+**CRITICAL: Never assume an all-dark or all-light theme.** Most designs ALTERNATE light and dark
+sections. Get this wrong and the entire template looks broken (black text on black bg, white text
+on white bg). Build the map BEFORE generating any files.
+
+**Fallback: Figma REST API** — If MCP tools are unavailable:
+
+```bash
+# Get full file structure, text, colors, typography
+curl -s -H "X-Figma-Token: {API_KEY}" "https://api.figma.com/v1/files/{FILE_KEY}"
+
+# Export rendered screenshots of nodes (renders WITH all children)
+curl -s -H "X-Figma-Token: {API_KEY}" "https://api.figma.com/v1/images/{FILE_KEY}?ids={NODE_IDS}&format=png&scale=2"
+```
+
+If the file has multiple pages, focus on the homepage/landing page first.
+
+**Step 3 — Interpret the Figma design and map to BudStacks:**
+
+Analyze the Figma output and produce a **design interpretation brief**. This is the critical AI step.
+Map what you see to the closest BudStacks components:
+
+| What you see in Figma | Map to BudStacks |
+|---|---|
+| **HEROES** | |
+| Large hero banner / full-width image with text overlay | `HeroFullScreen` |
+| Split layout — text one side, image other | `HeroSplit` |
+| Split layout with multiple image grid (2-3 images) | `HeroSplitImages` |
+| Video placeholder or cinematic header | `HeroVideo` |
+| Clean text-only header, no image | `HeroMinimal` |
+| Animated gradient / abstract colorful background | `HeroAurora` or `HeroMeshGradient` |
+| Glassmorphism hero with blur/glow effects | `HeroShaderGlass` |
+| Clean modern hero with gradient text + showcase image | `HeroDesignali` |
+| Animated pattern/grid background (checks, stripes) | `HeroWarpShader` |
+| Dark futuristic / cyberpunk / grid-line aesthetic | `HeroFuturistic` |
+| **CONTENT** | |
+| 3-4 icon+text cards in a grid | `ValueProps` |
+| 6+ feature items in grid/list | `Features` |
+| Text block + image side by side with stats | `About` |
+| Product category cards | `ProductShowcase` |
+| Quote/review cards with star ratings | `Testimonials` |
+| Avatar stack + rating + customer count (compact) | `SocialProof` |
+| Image grid / masonry layout | `Gallery` |
+| Video + image mixed grid with lightbox | `VideoGallery` |
+| Big number counters on colored bg | `Stats` or `StatsCounter` |
+| Expandable question/answer list | `FAQ` |
+| Blog post cards | `BlogFeed` |
+| Full-width image with overlaid text card | `ImageShowcase` |
+| Full-width image with parallax scroll effect | `Parallax` |
+| Scrolling logo strip / partner logos | `LogoMarquee` |
+| Asymmetric card grid with mixed sizes | `BentoGrid` |
+| Pricing tier cards / membership plans | `Pricing` |
+| Feature comparison matrix / table | `ComparisonTable` |
+| Team member cards with photos + roles | `TeamGrid` |
+| Vertical timeline / milestones / history | `Timeline` |
+| Numbered steps / how-it-works flow | `ProcessSteps` |
+| Tabbed content panels with icons | `TabsShowcase` |
+| **CTAs** | |
+| Gradient banner with single CTA button | `CTABanner` |
+| Image bg with CTA overlay | `CTAWithImage` |
+| Steps/process diagram + image | `CTASplit` |
+| Email signup / newsletter form | `Newsletter` |
+| **NAVIGATION** | |
+| Dark floating nav with blur | `NavDark` |
+| Transparent/invisible nav | `NavTransparent` |
+| Solid professional nav with cart | `NavFull` |
+| Simple minimal nav | `NavMinimal` |
+| HealingBuds branded nav | `NavHealingBuds` |
+| **FOOTERS** | |
+| Premium footer with contact info + columns | `FooterBrand` |
+| Multi-column link footer | `FooterFull` |
+| Single-line minimal footer | `FooterSimple` |
+
+**Step 4 — Extract design tokens:**
+
+From the Figma colors/variables, extract and convert to raw HSL channels:
+- Primary, secondary, accent colors → `"H S% L%"` format (NO hex, NO `hsl()` wrapper)
+- Background and surface colors
+- Text and heading colors
+- Any gradient definitions
+
+From typography:
+- Identify heading font family and body font family
+- Map to Google Fonts URL
+- Extract font weights, sizes, letter-spacing if available
+
+**Step 5 — Extract content:**
+
+Pull actual text content from the Figma design:
+- Hero headline and subtitle
+- Section headings
+- Value prop / feature item text
+- CTA button labels
+- Navigation link labels
+- Footer text and tagline
+
+Use the ACTUAL text from the Figma file — don't generate placeholder content when real content exists.
+
+**Step 6 — Present interpretation to user for approval:**
+
+Before generating files, present a summary:
+```
+Figma Import Summary:
+- Brand: {name from Figma file}
+- Sections detected: Hero (split) → Values (4 cards) → About → Testimonials → CTA → Footer
+- Mapped to: HeroSplit → ValueProps → About → Testimonials → CTABanner
+- Nav: NavFull (solid professional nav detected)
+- Footer: FooterBrand (multi-column with contact)
+- Colors: Primary #xxx → H S% L%, Secondary #xxx → H S% L%, ...
+- Typography: {heading font} + {body font}
+- Content: Using text from Figma file
+- Images: {N} images detected (will need to be provided separately for S3)
+```
+
+**Wait for user approval before proceeding to Phase 2.**
+
+**Image handling note:** Figma images can be exported via the API but quality/licensing varies.
+Flag to the user which sections need images and whether the Figma images should be exported
+or if they'll provide their own. Create `assets/` directory with `.gitkeep` for any missing images.
+
+---
+
+#### Path B: Manual Interview (no Figma URL)
 
 **MANDATORY: You MUST complete this interview before writing ANY files.**
 **DO NOT skip this phase. DO NOT assume answers. ASK the user directly.**
@@ -72,10 +248,18 @@ After the interview, summarize your understanding back to the user before procee
 
 ### Phase 2: Design Decisions
 
-**GATE CHECK: Did you complete Phase 1? If not, go back. No exceptions.**
+**GATE CHECK: Did you complete Phase 1 (either Path A Figma import OR Path B interview)? If not, go back. No exceptions.**
+**If using Figma import:** Your design decisions are largely pre-made from the Figma file. Present the choices below but pre-fill them from the Figma interpretation. Only ask the user about gaps.
 
 Before writing any files, make these creative choices. Present them to the user as a design brief
 and get approval before generating files. Document your reasoning.
+
+#### 2.0 AI IDE MCP Integration (Stitch & 21st.dev)
+
+If you have access to UI generation MCP tools like Stitch or 21st.dev, you MUST use them to rapidly prototype the visual design of the template or its individual sections. When doing so:
+1. Provide the brand mood, audience, and constraints to the MCP server to generate a UI composition.
+2. NEVER output the raw generated React/Tailwind code to the user as the final product.
+3. Instead, translate the MCP's generated UI directly into the BudStacks architecture — extract the exact HSL colors, semantic CSS choices (glassmorphism borders, specific shadows, etc.), and layout structure into your 4 BudStacks pure data files.
 
 #### 2a. Choose a Layout Archetype
 
@@ -159,28 +343,48 @@ This is the creative backbone — which sections appear and how they're configur
 - `"dividerTop"` & `"dividerBottom"`: "wave" | "tilt" | "triangle" | "curve" | "clouds"
 - `"dividerColor"` & `"dividerHeight"` (e.g., "100px")
 
-**Heroes** (pick ONE):
-- `HeroFullScreen` — immersive, full-viewport, gradient/image bg. Config: textAlign, heroType, ctaText, secondaryCtaText, heroHeight ("100vh" | "80vh" | "600px"), paddingTop, paddingBottom, overlayStyle ("dark" | "glass" | "gradient")
+**Heroes** (pick ONE — 11 available):
+- `HeroFullScreen` — immersive, full-viewport, gradient/image bg. Config: textAlign, heroType, ctaText, secondaryCtaText, heroHeight, overlayStyle
 - `HeroSplit` — two-column text+image. Config: title, subtitle, ctaText, secondaryCtaText, contentPosition ("left" | "right")
+- `HeroSplitImages` — split with 2-3 image grid. Config: title, ctaText, layout ("left"|"right"), imageUrl, imageUrl2, imageUrl3, badgeText
 - `HeroVideo` — video background with watermark overlay. Config: videoUrl, watermarkUrl, textAlign, overlayOpacity, ctaText
 - `HeroMinimal` — clean gradient, no image. Config: title, subtitle, ctaText
+- `HeroAurora` — animated aurora/sunset CSS gradient. Config: title, ctaText, auroraIntensity ("subtle"|"medium"|"vivid")
+- `HeroMeshGradient` — dark cinematic mesh shader, luxury feel. Config: title, ctaText, textAlign, shaderSpeed, wireframe
+- `HeroShaderGlass` — glassmorphic with pulsing border glow. Config: title, ctaText, shaderSpeed, glowColor ("primary"|"accent"|"white")
+- `HeroDesignali` — clean modern with gradient text + showcase image. Config: title, ctaText, imageUrl, badgeText, glowIntensity
+- `HeroWarpShader` — animated warp pattern (WebGL). Config: title, ctaText, shaderShape ("checks"|"grid"|"stripes"), shaderSpeed, shaderSwirl
+- `HeroFuturistic` — dark cyberpunk with animated grid lines. Config: title, ctaText, gridDensity, glowColor, scanLine
 
-**Content** (pick 2-6):
+**Content** (pick 2-8 — 19 available):
 - `About` — two-column text+image with stat counters. Config: heading, content, imageUrl, stats
 - `ValueProps` — card grid (3 or 4 items). Config: heading, subtitle, items[]
 - `Features` — icon+text horizontal cards (3-6 items). Config: heading, subtitle, items[]
 - `ProductShowcase` — product category cards. Config: heading, subtitle, categories[]
 - `Testimonials` — star-rating review cards. Config: heading, subtitle, items[]
+- `SocialProof` — compact avatar stack + rating + count. Config: heading, avatars, count, label, rating, testimonial
 - `Gallery` — masonry image grid. Config: heading, subtitle, items[]
+- `VideoGallery` — video+image grid with lightbox modal. Config: heading, subtitle, items[] (type, src, thumbnail, title, span)
 - `Stats` — animated number counters on gradient bg. Config: heading, items[]
+- `StatsCounter` — upgraded Stats with spring physics + icons. Config: heading, items[] (value, suffix, label, icon)
 - `FAQ` — accordion. Config: heading, subtitle, items[]
 - `BlogFeed` — latest posts. Config: heading, subtitle
 - `ImageShowcase` — full-width bg image with overlay card. Config: heading, content, imageUrl, overlayStyle, ctaText
+- `Parallax` — full-width parallax scroll image. Config: heading, description, imageUrl, ctaText, overlayOpacity
+- `LogoMarquee` — infinite scrolling logo carousel. Config: heading, logos[] (src, alt), speed, reverse
+- `BentoGrid` — asymmetric card grid with mixed sizes. Config: heading, subtitle, cards[] (icon, title, description, span, imageUrl)
+- `Pricing` — 2-3 tier pricing cards. Config: heading, subtitle, tiers[] (name, price, description, features[], cta, highlighted)
+- `TeamGrid` — team member cards with avatars. Config: heading, subtitle, members[] (name, role, avatar, bio)
+- `Timeline` — vertical timeline with year labels. Config: heading, subtitle, entries[] (year, title, description, imageUrl)
+- `ComparisonTable` — feature comparison matrix. Config: heading, subtitle, tiers[], features[] (name, values[])
+- `ProcessSteps` — numbered steps with connecting lines. Config: heading, subtitle, orientation, steps[] (title, description, icon)
+- `TabsShowcase` — tabbed content with icons + images. Config: heading, subtitle, tabs[] (label, icon, title, description, imageUrl)
 
-**CTAs** (pick 0-2):
+**CTAs** (pick 0-2 — 4 available):
 - `CTABanner` — gradient banner. Config: heading, subtitle, ctaText
 - `CTAWithImage` — image bg with overlay. Config: heading, subtitle, ctaText, imageUrl
 - `CTASplit` — split text+steps+image. Config: heading, subtitle, ctaText, imageUrl
+- `Newsletter` — email signup form. Config: heading, subtitle, placeholder, buttonText
 
 **Section IDs:** Give each section a unique, semantic ID (e.g., "hero", "about", "values", "showcase", "reviews", "cta"). These are used for CSS scoping.
 
@@ -289,11 +493,11 @@ The platform prefixes these with the tenant base path automatically.
 ```json
 {
   "links": [
-    { "label": "Conditions", "href": "/conditions" },
-    { "label": "Products", "href": "/products" },
+    { "label": "About Us", "href": "/about" },
+    { "label": "Research", "href": "/conditions" },
     { "label": "The Wire", "href": "/the-wire" },
-    { "label": "About", "href": "/about" },
-    { "label": "Contact", "href": "/contact" }
+    { "label": "Eligibility", "href": "/consultation" },
+    { "label": "Strains", "href": "/products" }
   ],
   "cta": { "label": "Check Eligibility", "href": "/consultation" },
   "cta2": { "label": "Patient Login", "href": "/login" },
@@ -477,10 +681,13 @@ for a finished template. Every template MUST ship with images.
 - Copy them directly into `assets/` with descriptive names
 - Reference them in the appropriate configs
 
-**If NO images are available yet:**
-- Still create the `assets/` directory with a `.gitkeep`
-- Set paths to reference expected filenames (e.g., `"assets/hero.jpg"`)
-- Tell the user EXACTLY which images they need to add and at what dimensions
+**If NO images are available yet (MANDATORY NANO BANANA WORKFLOW):**
+- If you have access to the **Nano Banana MCP server**, you MUST use it to generate placeholder images.
+- Create the `assets/` directory.
+- Use Nano Banana to generate high-quality images matching the brand's aesthetic (e.g., "A modern, well-lit cannabis dispensary interior, architectural photography, 16:9 ratio").
+- Save these images directly into the `template-name/assets/` folder (e.g., `hero.png`, `about.png`).
+- Make sure `layout.json` and `defaults.json` reference these newly generated assets.
+- If Nano Banana is unavailable, create an `assets/.gitkeep`, set placeholder paths, and explicitly tell the user which images they need to provide.
 
 **Asset naming convention:**
 ```
@@ -559,3 +766,113 @@ Then guide the user:
 - Over-engineer — keep sections to 3-8 per template
 - Set heroImagePath to null — always reference an asset
 - Default to HeroFullScreen every time — use HeroSplit, HeroVideo, HeroMinimal
+- Ignore the new components — use LogoMarquee, BentoGrid, ProcessSteps, TabsShowcase, Parallax, etc.
+- Skip image export — always use Figma Images API to pull real assets into assets/
+
+---
+
+## Figma Import: Complete Workflow Reference
+
+This is the end-to-end pipeline for converting any Figma design into a BudStacks template.
+
+### Quick Reference: Figma API Endpoints
+
+```bash
+# 1. Get full file (structure, text, colors, fonts)
+curl -s -H "X-Figma-Token: {KEY}" "https://api.figma.com/v1/files/{FILE_KEY}"
+
+# 2. Export images from specific nodes (scale=2 for retina)
+curl -s -H "X-Figma-Token: {KEY}" "https://api.figma.com/v1/images/{FILE_KEY}?ids={NODE_IDS}&format=png&scale=2"
+
+# 3. Get file styles (published styles only)
+curl -s -H "X-Figma-Token: {KEY}" "https://api.figma.com/v1/files/{FILE_KEY}/styles"
+```
+
+### Image Export Strategy
+
+**CRITICAL: Two types of image export exist — know the difference:**
+
+#### Type 1: Node Render (NO imageRef) — Full-size composed image
+When you call `download_figma_images` with a nodeId but **WITHOUT** an `imageRef`, the Figma API
+RENDERS the node with all its children at the requested scale. This produces a full-size, web-ready
+image exactly as it appears in the design.
+
+**Use this for:**
+- Full-page design reference screenshots (export the root frame)
+- Section screenshots for visual comparison
+- Composed visuals (hero with overlays, cards with text, etc.)
+- ANY image where you want the final composed result
+
+#### Type 2: Fill Image (WITH imageRef) — Raw source fill
+When you include an `imageRef`, it downloads the raw image fill from that specific node. This can
+be a tiny thumbnail, a cropped portion, or a low-res placeholder — **you have no control over the
+source resolution.**
+
+**Use this ONLY for:**
+- Raw background photos you'll use as CSS backgrounds
+- Source images you know are high-res from the Figma data
+
+#### Correct Export Workflow
+
+1. **Export the full page as a reference** (Node Render, no imageRef):
+   ```
+   {nodeId: "ROOT_FRAME", fileName: "design-reference.png"}
+   ```
+
+2. **Export each section GROUP as a composed screenshot** (Node Render, no imageRef):
+   ```
+   {nodeId: "HERO_GROUP", fileName: "hero-composed.png"}
+   {nodeId: "PARTNERS_GROUP", fileName: "partners-composed.png"}
+   ```
+
+3. **Export individual images at full size** (Node Render on the IMAGE rectangle, no imageRef):
+   ```
+   {nodeId: "PARTNER_PHOTO_RECT", fileName: "partner-erik.png"}
+   ```
+   This renders the rectangle at its Figma dimensions × pngScale. A 458×497px rectangle at
+   scale=2 produces a 916×994px image — perfect for web.
+
+4. **Only use imageRef as a last resort** when you specifically need the raw source image
+   and you've verified it's high-res.
+
+#### Quality Checklist
+- **Minimum file size for photos:** >50KB (if a "photo" is 9KB, something is wrong)
+- **Always use pngScale: 2** for retina-ready images
+- **Verify sizes after download** — `ls -lh assets/` and flag anything suspiciously small
+
+#### Rate Limit Awareness (Figma API: ~30 requests/minute)
+- **Batch all image downloads into ONE call** — pass all nodes in a single array
+- **Never retry 429 errors immediately** — wait at least 60 seconds, or ask the user to export manually
+- **Minimize total API calls:** 1 for `get_figma_data` + 1 for `download_figma_images` = 2 total
+- **If rate-limited:** Ask the user to manually export from Figma (Select node → Export → PNG 2x)
+
+#### Semantic naming:
+- Hero image → `hero.png`
+- About section image → `about.png`
+- Team/partner photos → `partner-{name}.png`
+- Brand images → `brand-{name}.png`
+- Gallery images → `gallery-{n}.png`
+- Section backgrounds → `bg-{section}.png`
+
+### Section Mapping Intelligence
+
+When interpreting a Figma design, think in terms of **what the section does**, not just what it looks like:
+
+- A row of logos → `LogoMarquee` (not "skip it")
+- A large mixed-size card grid → `BentoGrid` (not just "ValueProps")
+- Numbered steps → `ProcessSteps` (not `CTASplit`)
+- A tabbed interface → `TabsShowcase` (not `Features`)
+- A full-width photo break → `Parallax` (not `ImageShowcase`)
+- An email signup form → `Newsletter` (not `CTABanner`)
+- A comparison matrix → `ComparisonTable` (not "skip it")
+- Staff/team photos → `TeamGrid` (not `About`)
+- Brand history / milestones → `Timeline` (not `About`)
+
+### Confidence Scoring
+
+When mapping Figma sections to BudStacks components, rate your confidence:
+- **High (90%+):** Clear visual match (e.g., accordion = FAQ, star ratings = Testimonials)
+- **Medium (60-89%):** Reasonable interpretation (e.g., large card grid could be BentoGrid or ProductShowcase)
+- **Low (<60%):** No clear match — flag to user and suggest closest option or skip
+
+Present low-confidence mappings to the user for decision before generating files.

@@ -210,9 +210,196 @@ Full-width background image with floating content card overlay.
 **Visual:** Rounded corners (2xl-3xl), min-height 420px, backdrop-blur content card. Multiple overlay options for directional emphasis.
 **Best for:** Facility showcases, immersive breaks between text sections, visual storytelling.
 
+### LogoMarquee
+Infinite scrolling brand logo carousel with edge fade masks.
+
+**Config:**
+| Key | Type | Default | Notes |
+|-----|------|---------|-------|
+| heading | string | "Trusted By" | Small uppercase label above marquee |
+| logos | Array | 6 placeholders | `{ src, alt }` — image URL + alt text |
+| speed | number | 60 | 1-100, controls scroll speed |
+| reverse | boolean | false | Reverse scroll direction |
+
+**Visual:** Infinite CSS animation loop, grayscale logos that colorize on hover, gradient fade masks on edges. Doubles logo array for seamless loop.
+**Best for:** Partner logos, brand trust signals, certifications. Pairs well after hero or before footer.
+
+### BentoGrid
+Trendy asymmetric card grid with variable span sizes.
+
+**Config:**
+| Key | Type | Default | Notes |
+|-----|------|---------|-------|
+| heading | string | "Why We Stand Out" | |
+| subtitle | string | — | |
+| cards | Array | 6 defaults | `{ icon, title, description, span, imageUrl }` |
+
+**Span options:** `"wide"` (col-span-2), `"tall"` (row-span-2), `"normal"` (1×1)
+**Icons available:** Leaf, Shield, Zap, Heart, Sparkles, Package
+**Visual:** 3-column grid with auto-rows, cards have icon badge + title + description. Optional background image (20% opacity). Hover shadow-xl.
+**Best for:** Feature highlights, value propositions with visual interest, modern layouts.
+
+### Pricing
+2-3 tier pricing cards with feature lists and highlighted "popular" tier.
+
+**Config:**
+| Key | Type | Default | Notes |
+|-----|------|---------|-------|
+| heading | string | "Simple, Transparent Pricing" | |
+| subtitle | string | "Choose the plan..." | |
+| tiers | Array | 3 defaults | `{ name, price, description, features[], cta, highlighted }` |
+
+**Visual:** Cards side by side, highlighted tier gets primary bg + white text + "Most Popular" badge + scale-up. Feature list with Check icons. CTA button per tier. Adapts to 2 or 3 tiers.
+**Best for:** Subscription plans, membership tiers, service packages.
+
+### TeamGrid
+Team member avatars with name, role, and optional bio.
+
+**Config:**
+| Key | Type | Default | Notes |
+|-----|------|---------|-------|
+| heading | string | "Meet Our Team" | |
+| subtitle | string | "The experts behind..." | |
+| members | Array | 4 defaults | `{ name, role, avatar, bio }` |
+
+**Visual:** Circular avatar (initials fallback if no image), name + role (primary color) + bio text. 4-col for 4+, 3-col otherwise. Staggered entrance animation.
+**Best for:** Team pages, about sections, establishing human connection.
+
+### Timeline
+Vertical timeline with dot indicators and year labels.
+
+**Config:**
+| Key | Type | Default | Notes |
+|-----|------|---------|-------|
+| heading | string | "Our Journey" | |
+| subtitle | string | — | |
+| entries | Array | 5 defaults | `{ year, title, description, imageUrl }` |
+
+**Visual:** Center vertical line (desktop), dot indicators, alternating left/right cards (desktop). Year badges in primary pill. Cards with border + rounded corners.
+**Best for:** Company history, milestones, process explanations, brand story.
+
+### ComparisonTable
+Feature comparison grid with check/x icons across tiers.
+
+**Config:**
+| Key | Type | Default | Notes |
+|-----|------|---------|-------|
+| heading | string | "Compare Plans" | |
+| subtitle | string | "Find the right fit..." | |
+| tiers | Array | ["Basic", "Pro", "Enterprise"] | Tier column names |
+| features | Array | 7 defaults | `{ name, values[] }` — values are `true`, `false`, or string |
+
+**Visual:** Table with tier headers, feature rows with Check (green) / X (gray) icons or text values. Responsive with horizontal scroll. Clean border styling.
+**Best for:** Plan comparison, feature matrices, upgrade justification. Pairs well with Pricing.
+
+### Parallax
+Full-width background image with parallax scroll effect and overlay text.
+
+**Config:**
+| Key | Type | Default | Notes |
+|-----|------|---------|-------|
+| heading | string | "Experience the Difference" | |
+| description | string | "Premium quality products..." | |
+| imageUrl | string | — | Background image, falls back to gradient |
+| ctaText | string | — | Optional CTA button |
+| ctaHref | string | consultationUrl | CTA link |
+| overlayOpacity | number | 0.5 | 0-1, dark overlay opacity |
+
+**Visual:** framer-motion scroll-linked parallax (±10% range). Dark overlay, centered white text, optional CTA button. Min-height 60vh. Gradient fallback.
+**Best for:** Visual breaks, immersive moments, image-heavy brands. Use between content sections.
+
+### SocialProof
+Avatar stack badge with trust metrics and optional testimonial.
+
+**Config:**
+| Key | Type | Default | Notes |
+|-----|------|---------|-------|
+| heading | string | — | Optional section heading |
+| avatars | Array | 5 defaults | Avatar image URLs |
+| count | number | 10000 | Customer count (displays as "10K+") |
+| label | string | "Happy Customers" | |
+| rating | number | 4.9 | Star rating (1-5) |
+| testimonial | string | — | Optional quote |
+| testimonialAuthor | string | — | Quote attribution |
+
+**Visual:** Overlapping avatar circles + star rating + count. Letters fallback for missing avatar images. Optional blockquote card below. Compact and punchy.
+**Best for:** Quick trust signal, pairs with hero or above CTA. Lightweight alternative to full Testimonials.
+
+### TabsShowcase
+Tabbed content with icon triggers and per-tab image + description.
+
+**Config:**
+| Key | Type | Default | Notes |
+|-----|------|---------|-------|
+| heading | string | "What Sets Us Apart" | |
+| subtitle | string | — | |
+| tabs | Array | 4 defaults | `{ label, icon, title, description, imageUrl }` |
+
+**Icons available:** Leaf, FlaskConical, Truck, ShieldCheck
+**Visual:** Pill-style tab triggers (active = primary bg). Content area: 2-column grid with text + image/placeholder. AnimatePresence transitions between tabs. Icon placeholder when no image.
+**Best for:** Feature deep-dives, process explanations, multi-aspect showcases. Rich alternative to ValueProps.
+
+### VideoGallery
+Video/image grid with click-to-expand modal and play button overlays.
+
+**Config:**
+| Key | Type | Default | Notes |
+|-----|------|---------|-------|
+| heading | string | "Gallery" | |
+| subtitle | string | — | |
+| items | Array | 5 defaults | `{ type, src, thumbnail, title, span }` |
+
+**Type options:** `"video"` (shows play button), `"image"`
+**Span options:** `"wide"` (col-span-2), `"normal"`
+**Visual:** 3-column grid with auto-rows. Hover: scale-up + dark overlay. Click: full-screen modal with video player or image viewer. X close button. Spring animation on modal.
+**Best for:** Product videos, behind-the-scenes, dispensary tours. Pairs well with Gallery.
+
+### ProcessSteps
+Horizontal or vertical numbered steps with connecting lines and icons.
+
+**Config:**
+| Key | Type | Default | Notes |
+|-----|------|---------|-------|
+| heading | string | "How It Works" | |
+| subtitle | string | "Getting started is simple" | |
+| orientation | "horizontal" \| "vertical" | "horizontal" | Layout direction |
+| steps | Array | 4 defaults | `{ title, description, icon }` |
+
+**Icons available:** ClipboardList, Search, Truck, CheckCircle
+**Visual:** Step circles with icon + numbered badge, connecting lines between steps. Horizontal = side-by-side on desktop, vertical = stacked. Staggered entrance.
+**Best for:** Onboarding flows, how-it-works, ordering process. Cleaner than CTASplit's hardcoded 3-step.
+
+### StatsCounter
+Animated digit roller with spring physics and icons — upgraded Stats.
+
+**Config:**
+| Key | Type | Default | Notes |
+|-----|------|---------|-------|
+| heading | string | — | Optional heading |
+| items | Array | 4 defaults | `{ value, suffix, label, icon }` |
+
+**Icons available:** Users, Package, Star, TrendingUp
+**Visual:** Primary→secondary gradient bg, icon circles (white/10 bg), spring-animated counter (framer-motion useSpring). Handles decimals (4.9) and large numbers (10,000+). White text.
+**CSS Note:** Same gradient background as Stats — may need dark text scoping.
+**Best for:** Impressive metrics with smooth animation. Use instead of Stats for richer visual.
+
 ---
 
 ## CTA Sections
+
+### Newsletter
+Email signup section with heading, input, and subscribe button.
+
+**Config:**
+| Key | Type | Default | Notes |
+|-----|------|---------|-------|
+| heading | string | "Stay in the Loop" | |
+| subtitle | string | "Get the latest news..." | |
+| placeholder | string | "you@example.com" | Input placeholder |
+| buttonText | string | "Subscribe" | Button label |
+
+**Visual:** Primary→secondary gradient bg, mail icon circle, email input + button inline (stacked on mobile). Success state on submit. White text, white/10 input bg.
+**Best for:** Email list building, pre-footer engagement. Place near end of page.
 
 ### CTABanner
 Simple gradient banner call-to-action.

@@ -2,19 +2,18 @@
 
 An AI-powered skill for [Claude Code](https://claude.ai/claude-code) that designs and generates production-ready storefront templates for the BudStacks cannabis SaaS platform.
 
-Describe your brand. The AI interviews you, designs a unique template, and generates everything you need — ready to upload and go live.
+Provide an optional Figma URL, or just describe your brand. The AI either intelligently interprets your design or interviews you, creates a unique template, and generates everything you need — ready to upload and go live.
 
 ## How It Works
 
 **Templates are pure data.** No React code. No custom components. Just 4 files that tell the BudStacks rendering engine what to display and how to style it. The platform has 22 pre-built section components — your template simply composes and configures them.
 
 ```
-Your Brand Description
-        |
-        v
-  AI Brand Interview
-  (vibe, audience, colors, content density)
-        |
+Figma URL (Optional)  OR  Your Brand Description
+        |                         |
+        |                         v
+        |                   AI Brand Interview
+        |---------<-------- (if no Figma URL)
         v
   Design Brief
   (archetype, sections, typography, color system)
@@ -57,6 +56,11 @@ The AI will walk you through everything.
 ## Sample Prompts
 
 The skill responds to natural language. Here are some ways to kick off a template:
+
+### Figma Import (Skips Interview)
+```
+/create-budstacks-template https://www.figma.com/design/HqvNJqJy8Xvu3KWYu8QLUV/My-Dispensary
+```
 
 ### Minimal Context (AI will ask follow-up questions)
 ```
@@ -285,9 +289,11 @@ The AI knows these page composition patterns and mixes them for variety. No two 
 
 Don't say "I want ValueProps and Stats." Say "I want it to feel like a high-end whiskey brand" or "think Apple Store meets cannabis." The AI translates mood into component choices.
 
-### Bring Images
+### Bring Images (or let AI generate them)
 
-Templates without images look like empty wireframes. The AI will set up asset references — you just need to drop your images into the `assets/` directory:
+Templates without images look like empty wireframes. If you have the **Nano Banana MCP** server enabled, the AI will automatically generate high-quality, brand-aligned placeholder images for your template!
+
+Otherwise, the AI will set up asset references and you just need to drop your images into the `assets/` directory:
 
 - Hero image or character art (for HeroSplit / HeroFullScreen)
 - Facility or lifestyle photo (for ImageShowcase / About)
@@ -309,6 +315,13 @@ The best templates aren't pure archetypes — they're hybrids. "Authority + Stor
 - **7-8 sections:** Rich, comprehensive (good for brands that need to explain a lot)
 
 More isn't always better. A focused 4-section template with killer images beats an 8-section wall of text.
+
+### Supercharge with MCP Tools
+
+This skill is designed to intelligently leverage other Claude Code MCP servers if you have them installed:
+- **Figma MCP**: Provide a Figma URL and the AI will automatically extract the layout, colors, typography, and text directly from your design file.
+- **Nano Banana MCP**: The AI will automatically generate and save high-quality, brand-matched placeholder images directly into the template's `assets/` folder.
+- **Stitch / 21st.dev MCPs**: The AI can use these tools to prototype UI visually, then perfectly translate those designs into the BudStacks pure data format.
 
 ---
 
