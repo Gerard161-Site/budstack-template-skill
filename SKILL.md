@@ -211,7 +211,7 @@ Put every image, logo and video in `assets/` at production size (`references/ass
 node scripts/validate-template.mjs ./{slug}
 ```
 
-Node 20 or later, no install. It must report **zero errors**. An error is something the runtime would ignore or render badly: an unknown section or key, a value off its list, a design-system key the runtime does not read, a missing asset or font, unreadable text, or CSS that breaks the rules above. Fix the template, not the validator.
+Node 20 or later, no install. It must report **zero errors**. An error is something the runtime would ignore or render badly: an unknown section or key, a value off its list, a design-system key the runtime does not read, a missing asset or font, unreadable text, an unfilled `{{PLACEHOLDER}}`, or CSS that breaks the rules above. Fix the template, not the validator.
 
 Warnings are rubric items. For each one, either fix it or write down why it stands.
 

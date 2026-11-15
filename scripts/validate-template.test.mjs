@@ -123,6 +123,14 @@ describe("layout.json", () => {
     );
   });
 
+  it("rejects scaffold placeholders left in any file", () => {
+    assertError(check((t) => { t.layout.sections[0].config.title = "{{HERO_TITLE}}"; }), "layout.sections[0].config.title: unfilled placeholder {{HERO_TITLE}}");
+    assertError(
+      check((t) => { t.defaults.pageContent = { about: { heroSubtitle: "About {{BUSINESS_NAME}}" } }; }),
+      "defaults.pageContent.about.heroSubtitle: unfilled placeholder {{BUSINESS_NAME}}",
+    );
+  });
+
   it("rejects an asset that is not in the folder", () => {
     assertError(check((t) => { t.layout.sections[0].config.imageUrl = "assets/missing.jpg"; }), "assets/missing.jpg is not in the template folder");
   });

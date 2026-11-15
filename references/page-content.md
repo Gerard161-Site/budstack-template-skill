@@ -298,7 +298,7 @@ Copy-paste starting point for `defaults.json.pageContent`:
 }
 ```
 
-Replace `{{...}}` placeholders during generation; never ship a template with placeholders in `pageContent` — `scripts/helpers.ts::findPlaceholders` should be invoked as a final sanity check.
+Replace every `{{...}}` placeholder during generation. The platform substitutes nothing at render time, so one left in would be shown to shoppers as written; the validator (`node scripts/validate-template.mjs <folder>`) fails a template that still holds one.
 
 ---
 

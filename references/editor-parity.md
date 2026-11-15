@@ -4,8 +4,8 @@
 > describes how the Store Editor's fields map to stored keys, which has not changed. Three things have:
 > `settings.sectionPadding` now replaces one base padding that each section's density multiplies (see
 > `design-tokens.md`, "Spacing") instead of forcing one padding on every section; nothing needs declaring in
-> `styles.css :root`; and the pre-ship check is `node scripts/validate-template.mjs <folder>`, not
-> `validate-layout.ts`. Where this page and `contract/` disagree, the contract is right.
+> `styles.css :root`; and the pre-ship check is `node scripts/validate-template.mjs <folder>`.
+> Where this page and `contract/` disagree, the contract is right.
 
 
 > **Purpose.** The Store Editor at `/tenant-admin/branding` is the canonical UI that operators use to edit a template. Anything you generate in `layout.json` / `defaults.json` MUST round-trip cleanly through that editor: when an operator opens the editor, every field renders; when they save, every field re-emits unchanged. Generate keys the editor doesn't know about → silently dropped on save. Miss keys the editor expects → empty fields, broken UI.

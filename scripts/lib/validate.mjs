@@ -13,6 +13,7 @@ import { join } from "node:path";
 import { checkCss } from "./check-css.mjs";
 import { checkDesignSystem } from "./check-design-system.mjs";
 import { checkLayout } from "./check-layout.mjs";
+import { checkPlaceholders } from "./check-placeholders.mjs";
 
 const SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,62}$/;
 const ASSET_EXTENSION = /\.(png|jpe?g|webp|svg|gif|avif|mp4|webm)$/i;
@@ -83,6 +84,7 @@ export function validateTemplate(dir, contract) {
     checkLayout(layout, contract.sections, slug),
     checkDesignSystem(defaults, layout, contract.sections, contract.designSystem),
     checkCss(css, slug),
+    checkPlaceholders({ layout, defaults, "template.config": config }),
   ];
   for (const result of results) {
     errors.push(...result.errors);
