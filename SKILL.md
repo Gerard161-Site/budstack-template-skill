@@ -176,7 +176,7 @@ What CSS is still for: a gradient or image background on one section, a decorati
 
 - At most 120 lines. No `!important`, `@import`, `@tailwind`, `@apply` or `theme()`.
 - Every selector starts with `.template-{slug}`.
-- Hooks that exist: `[data-section-type="HeroSplit"]`, `[data-section-id="values"]`, `#values`, and roles inside a section — `[data-ui~="section"]`, `[data-ui~="header"]`, `[data-ui~="heading"]`, `[data-ui~="subtitle"]`, `[data-ui~="eyebrow"]`, `[data-ui~="card"]`, `[data-ui~="media"]`, `[data-ui~="button"]` (with `[data-variant="primary|secondary|ghost|inverse"]`).
+- Hooks that exist: `[data-section-type="HeroSplit"]`, `[data-section-id="values"]`, `#values`, and roles inside a section — `[data-ui~="section"]`, `[data-ui~="header"]`, `[data-ui~="heading"]`, `[data-ui~="subtitle"]`, `[data-ui~="eyebrow"]`, `[data-ui~="card"]`, `[data-ui~="media"]`, `[data-ui~="button"]` (with `[data-variant="primary|accent|secondary|ghost|inverse|custom"]`).
 - Never target a Tailwind utility class (`.rounded-2xl`, `.bg-white`, `[class*="shadow"]`): they are internal and change.
 - Never declare `--tenant-color-*`: colours come from `designSystem.colors`, and the platform strips these lines. For a tint use alpha: `hsl(var(--tenant-color-primary) / 0.08)`.
 - Wrap any animation in `@media (prefers-reduced-motion: no-preference)`.

@@ -488,7 +488,6 @@ Logo Marquee. Infinite scrolling brand logo carousel with edge fade. Default den
 
 | Key | Label | Type | Default | Options |
 |---|---|---|---|---|
-| `eyebrow` | Eyebrow (small label above the heading) | text |  |  |
 | `heading` | Heading | text | `Trusted By` |  |
 | `textAlign` | Heading Alignment | select | `center` | `left` `center` `right` |
 | `logos` | Logos | array |  |  |
@@ -916,7 +915,6 @@ Mission & Story. Icon-badged heading, story paragraphs, optional image. Default 
 
 | Key | Label | Type | Default | Options |
 |---|---|---|---|---|
-| `eyebrow` | Eyebrow (small label above the heading) | text |  |  |
 | `heading` | Heading | text | `Our Mission` |  |
 | `textAlign` | Text Alignment | select | `left` | `left` `center` `right` |
 | `paragraphs` | Story Paragraphs | textarea |  |  |

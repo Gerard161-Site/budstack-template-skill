@@ -2832,12 +2832,6 @@
       "defaultDensity": "compact",
       "fields": [
         {
-          "key": "eyebrow",
-          "label": "Eyebrow (small label above the heading)",
-          "type": "text",
-          "default": ""
-        },
-        {
           "key": "heading",
           "label": "Heading",
           "type": "text",
@@ -4397,12 +4391,6 @@
       "ownsPadding": false,
       "defaultDensity": "normal",
       "fields": [
-        {
-          "key": "eyebrow",
-          "label": "Eyebrow (small label above the heading)",
-          "type": "text",
-          "default": ""
-        },
         {
           "key": "heading",
           "label": "Heading",
