@@ -109,6 +109,29 @@ This URL goes in TWO places:
 1. `layout.json` → `settings.googleFontsUrl`
 2. `styles.css` → `@import url('...');` at top
 
+## Where the fonts are declared
+
+Two places, and both are required for a font to render:
+
+1. **`defaults.json` → `designSystem.typography.fontFamily`** — what the runtime reads:
+   ```json
+   "fontFamily": {
+     "body": "'DM Sans', system-ui, sans-serif",
+     "heading": "'Space Grotesk', system-ui, sans-serif"
+   }
+   ```
+   The keys are exactly `body` and `heading` (plus an optional `accent`). The validator rejects any other
+   key. The platform uses the same two stacks on every store page, so nothing is declared in `styles.css`.
+2. **`layout.json` → `settings.googleFontsUrl`** — what loads the font files. Every family named above must
+   be in the URL, with the weights the design uses. The alternative is to use the platform's catalogue font
+   ids (`inter`, `playfair`, `dm-sans` …, listed in `contract/section-schemas.json` → `fontCatalog`) and set
+   no URL; the platform then loads them itself.
+
+## Fonts and the Store Editor
+
+A template may use any Google Font. The editor shows a font outside its catalogue as "Template font" and
+keeps it when the operator saves; it changes only if the operator picks another font.
+
 ## CSS Font Stack Format
 
 Always include fallbacks:

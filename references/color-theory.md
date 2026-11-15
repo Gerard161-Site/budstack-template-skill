@@ -14,6 +14,14 @@ color: hsl(var(--tenant-color-primary));
 background: hsl(var(--tenant-color-primary) / 0.5);  /* with opacity */
 ```
 
+## What the Runtime Uses
+
+The runtime consumes the eight base colours in `designSystem.colors` and nothing else from this page.
+The scale, shadow and gradient recipes below are **design aids** for choosing those eight values and
+for writing the occasional `styles.css` rule. Do not emit `primary-scale`, `shadows` strings or
+`gradients` into `defaults.json` — they are ignored — and do not declare `--tenant-color-*` variables in
+`styles.css :root` — they are stripped.
+
 ## Generating a Color Scale (50-900)
 
 From a base primary HSL, generate a 10-step scale by varying lightness while keeping hue and saturation relatively stable:
@@ -134,18 +142,12 @@ Ensure WCAG AA compliance:
 **Quick rule:** If primary is dark (lightness < 40%), use white text on primary bg.
 If primary is light (lightness > 60%), use dark text on primary bg.
 
-## Dark Section Color Scoping
+## Dark Section Colours
 
-When a section has a dark background, locally override the CSS variables:
+Give a dark section its colours with `colorOverrides` on the section in `layout.json` (SKILL.md
+Phase 4) — `background`, `surface`, `heading`, `text`, `border`. The renderer scopes them to that
+section, checks text and heading against the new background, and the operator can edit them.
 
-```css
-.template-slug #section-id {
-  --tenant-color-surface: H S% L%;      /* dark bg */
-  --tenant-color-heading: 0 0% 100%;    /* white headings */
-  --tenant-color-text: 0 0% 85%;        /* light body text */
-  --tenant-color-border: H S% L%;       /* subtle dark border */
-}
-```
-
-**Footer** always needs this treatment. `Stats` and `CTABanner` have built-in dark gradient
-backgrounds but still need heading color overrides.
+**Footer:** `FooterBrand` and `FooterFull` are dark by default (`220 15% 10%`, white text). Brand them
+with `footerConfig.colorOverrides`. `Stats` and `CTABanner` paint a primary→secondary gradient with
+white text hard-coded, so they need a primary and secondary dark enough for white to read.

@@ -402,3 +402,183 @@ export async function validateTemplate(templatePath: string): Promise<{
     warnings
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Editor-parity validators
+//
+// These mirror nextjs_space/lib/types/template-layout.ts and
+// nextjs_space/app/tenant-admin/branding/types.ts. Use during template
+// generation to keep emitted JSON round-trip-safe with the Store Editor.
+// See references/editor-parity.md and scripts/validate-layout.ts.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Validate raw-HSL channel format (no `hsl()` wrapper).
+ * Examples:
+ *   validateHsl("178 48% 21%")      // true
+ *   validateHsl("hsl(178 48% 21%)") // false  (wrapper)
+ *   validateHsl("#0E5C56")           // false  (hex)
+ *
+ * Lower-case alias of validateHSL for the API contract documented
+ * in references/design-tokens.md.
+ *
+ * @param value - candidate raw-HSL string
+ * @returns true if value matches "H S% L%" with valid ranges
+ */
+export function validateHsl(value: string): boolean {
+  if (typeof value !== 'string') return false;
+  if (value.includes('hsl(') || value.includes(')')) return false;
+
+  const pattern = /^\d{1,3}\s+\d{1,3}%\s+\d{1,3}%$/;
+  if (!pattern.test(value.trim())) return false;
+
+  const parts = value.trim().split(/\s+/);
+  const h = parseInt(parts[0], 10);
+  const s = parseInt(parts[1], 10);
+  const l = parseInt(parts[2], 10);
+
+  if (Number.isNaN(h) || h < 0 || h > 360) return false;
+  if (Number.isNaN(s) || s < 0 || s > 100) return false;
+  if (Number.isNaN(l) || l < 0 || l > 100) return false;
+
+  return true;
+}
+
+/**
+ * The 8 keys the editor's per-section colour panel allows. Anything else in
+ * a `colorOverrides` object is silently dropped on save and indicates a
+ * generation bug — the operator will lose those overrides on the next save.
+ *
+ * Source of truth: nextjs_space/lib/types/template-layout.ts::SectionColorOverrides
+ */
+export const SECTION_COLOR_OVERRIDE_KEYS = [
+  'primary',
+  'secondary',
+  'accent',
+  'background',
+  'surface',
+  'text',
+  'heading',
+  'border'
+] as const;
+
+export type SectionColorOverrideKey = typeof SECTION_COLOR_OVERRIDE_KEYS[number];
+
+/**
+ * Validate a section-level `colorOverrides` object.
+ * Returns a list of issue strings — empty array means valid.
+ *
+ *   validateColorOverrides({ primary: "150 40% 30%" })            // []
+ *   validateColorOverrides({ primary: "#0E5C56" })                 // []  (hex tolerated)
+ *   validateColorOverrides({ heroBackground: "150 40% 30%" })      // ["Unknown key: heroBackground..."]
+ *   validateColorOverrides({ primary: "hsl(150 40% 30%)" })        // ["primary: ..."]
+ *
+ * Hex (`#RRGGBB`) is accepted because the editor's TenantThemeProvider
+ * auto-converts hex to channel format at render time. Generators should
+ * still prefer raw-HSL — see references/design-tokens.md.
+ *
+ * @param obj - the section's `colorOverrides` value
+ * @returns array of human-readable error strings (empty if valid)
+ */
+export function validateColorOverrides(obj: unknown): string[] {
+  const errors: string[] = [];
+  const allowed = new Set<string>(SECTION_COLOR_OVERRIDE_KEYS);
+
+  if (obj === null || obj === undefined) return errors;
+  if (typeof obj !== 'object' || Array.isArray(obj)) {
+    return ['colorOverrides must be a plain object'];
+  }
+
+  for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+    if (!allowed.has(key)) {
+      errors.push(
+        `Unknown key: ${key}. Allowed: ${SECTION_COLOR_OVERRIDE_KEYS.join(', ')}`
+      );
+      continue;
+    }
+    if (value === '' || value === null || value === undefined) continue;
+    if (typeof value !== 'string') {
+      errors.push(`${key}: must be string, got ${typeof value}`);
+      continue;
+    }
+    const isHex = /^#[0-9a-fA-F]{6}$/.test(value);
+    if (!isHex && !validateHsl(value)) {
+      errors.push(
+        `${key}: "${value}" is not a valid raw-HSL or #RRGGBB value`
+      );
+    }
+  }
+
+  return errors;
+}
+
+/**
+ * Validate a `logoPlacement` object against the editor's BrandTab ranges.
+ * Returns a list of issue strings — empty array means valid.
+ *
+ * Source of truth: nextjs_space/app/tenant-admin/branding/types.ts::LogoPlacement
+ * and brand-tab.tsx slider min/max values.
+ *
+ * Numeric ranges:
+ *   navSize    24–120 px
+ *   heroX      0–100  %
+ *   heroY      0–100  %
+ *   heroSize   24–400 px
+ *
+ * Enum values:
+ *   navPosition    "left" | "center" | "right"
+ *   heroStyle      "plain" | "circular" | "badge"
+ *
+ * @param obj - the `logoPlacement` value
+ * @returns array of human-readable error strings (empty if valid)
+ */
+export function validateLogoPlacement(obj: unknown): string[] {
+  const errors: string[] = [];
+
+  if (obj === null || obj === undefined) return errors;
+  if (typeof obj !== 'object' || Array.isArray(obj)) {
+    return ['logoPlacement must be a plain object'];
+  }
+
+  const lp = obj as Record<string, unknown>;
+  const validNavPositions = ['left', 'center', 'right'];
+  const validHeroStyles = ['plain', 'circular', 'badge'];
+
+  if (lp.navPosition !== undefined && !validNavPositions.includes(lp.navPosition as string)) {
+    errors.push(
+      `navPosition: "${lp.navPosition}" must be one of ${validNavPositions.join(', ')}`
+    );
+  }
+  if (lp.heroStyle !== undefined && !validHeroStyles.includes(lp.heroStyle as string)) {
+    errors.push(
+      `heroStyle: "${lp.heroStyle}" must be one of ${validHeroStyles.join(', ')}`
+    );
+  }
+
+  const numericRanges: Array<[string, number, number]> = [
+    ['navSize', 24, 120],
+    ['heroX', 0, 100],
+    ['heroY', 0, 100],
+    ['heroSize', 24, 400]
+  ];
+  for (const [key, min, max] of numericRanges) {
+    if (lp[key] === undefined) continue;
+    const value = lp[key];
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      errors.push(`${key}: must be number, got ${typeof value}`);
+      continue;
+    }
+    if (value < min || value > max) {
+      errors.push(`${key}: ${value} out of range (${min}–${max})`);
+    }
+  }
+
+  const booleanKeys = ['showBusinessName', 'heroShowLogo', 'footerShowLogo'];
+  for (const key of booleanKeys) {
+    if (lp[key] !== undefined && typeof lp[key] !== 'boolean') {
+      errors.push(`${key}: must be boolean, got ${typeof lp[key]}`);
+    }
+  }
+
+  return errors;
+}

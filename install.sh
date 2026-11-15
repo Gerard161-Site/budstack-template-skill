@@ -28,20 +28,18 @@ echo " |  _ \| | | |/ _\` \___ \| __/ _\` |/ __| |/ / __|"
 echo " | |_) | |_| | (_| |___) | || (_| | (__|   <\__ \\"
 echo " |____/ \__,_|\__,_|____/ \__\__,_|\___|_|\_\___/"
 echo ""
-echo " Template Creator Skill — v3.0"
+echo " Template Builder Skill — v5.0 (Template Design System v2)"
 echo ""
 
 # Create skill directory structure
 mkdir -p "$SKILL_DIR/references"
 mkdir -p "$SKILL_DIR/scripts"
 
-# Copy skill files
+# Copy the skill: the document, every reference (including the platform
+# contract in references/contract/) and the validator.
 cp "$SCRIPT_DIR/SKILL.md" "$SKILL_DIR/SKILL.md"
-cp "$SCRIPT_DIR/references/component-catalog.md" "$SKILL_DIR/references/component-catalog.md"
-cp "$SCRIPT_DIR/references/layout-archetypes.md" "$SKILL_DIR/references/layout-archetypes.md"
-cp "$SCRIPT_DIR/references/typography.md" "$SKILL_DIR/references/typography.md"
-cp "$SCRIPT_DIR/references/color-theory.md" "$SKILL_DIR/references/color-theory.md"
-cp "$SCRIPT_DIR/scripts/helpers.ts" "$SKILL_DIR/scripts/helpers.ts"
+cp -R "$SCRIPT_DIR/references/." "$SKILL_DIR/references/"
+cp -R "$SCRIPT_DIR/scripts/." "$SKILL_DIR/scripts/"
 
 echo "Installed to: $SKILL_DIR"
 echo ""
@@ -53,8 +51,8 @@ echo "  Open Claude Code and type:"
 echo ""
 echo "    /create-budstacks-template YourBrandName"
 echo ""
-echo "  The AI will interview you about your brand,"
-echo "  then design and generate a complete template."
+echo "  Give it a design handoff, a Figma URL, or"
+echo "  just the brand, and it builds the template."
 echo ""
 echo "-------------------------------------------"
 echo ""

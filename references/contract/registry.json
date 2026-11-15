@@ -1,0 +1,71 @@
+{
+  "hero": [
+    "HeroFullScreen",
+    "HeroSplit",
+    "HeroVideo",
+    "HeroMinimal",
+    "HeroWarpShader",
+    "HeroMeshGradient",
+    "HeroAurora",
+    "HeroShaderGlass",
+    "HeroDesignali",
+    "HeroSplitImages",
+    "HeroFuturistic",
+    "HeroCollage",
+    "HeroFramed"
+  ],
+  "cta": [
+    "Newsletter",
+    "CTABanner",
+    "CTASplit",
+    "CTAWithImage"
+  ],
+  "content": [
+    "ValueProps",
+    "ProductShowcase",
+    "Testimonials",
+    "About",
+    "Gallery",
+    "Stats",
+    "FAQ",
+    "BlogFeed",
+    "Features",
+    "LogoMarquee",
+    "BentoGrid",
+    "Pricing",
+    "TeamGrid",
+    "Timeline",
+    "ComparisonTable",
+    "Parallax",
+    "SocialProof",
+    "TabsShowcase",
+    "VideoGallery",
+    "ProcessSteps",
+    "StatsCounter",
+    "ImageShowcase",
+    "TextMarquee",
+    "FeaturesShowcase"
+  ],
+  "about": [
+    "AboutHero",
+    "AboutMission",
+    "AboutStats",
+    "AboutValues",
+    "AboutFacilities",
+    "AboutTimeline",
+    "AboutCta"
+  ],
+  "navigation": [
+    "NavMinimal",
+    "NavDark",
+    "NavTransparent",
+    "NavFull",
+    "NavHealingBuds",
+    "NavPill"
+  ],
+  "footer": [
+    "FooterSimple",
+    "FooterBrand",
+    "FooterFull"
+  ]
+}
