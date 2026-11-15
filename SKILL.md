@@ -127,6 +127,8 @@ Colour guidance is in `references/color-theory.md`; font pairing in `references/
 - Every section needs a unique `id` and a `type` from the registry. `config` holds only keys the catalogue lists for that type.
 - Links are relative (`/about`, `/products`, `/consultation`, `/the-wire`, `/contact`, `/faq`); the platform adds the store prefix.
 - Images are `assets/<file>` and the file must exist. Never leave an image or logo field as an empty string: remove the item or supply the file.
+- Leave out a `subtitle` the design does not have. In a v2 store a section shows no subtitle of its own. Headings, items and button labels are different: a section still falls back to built-in text for those, so always set them.
+- HeroSplitImages shows `subtitle` as a small pill badge above the title; the paragraph under the title is `description`.
 - `settings.wrapperClass` is exactly `template-{slug}`. `settings.googleFontsUrl` must load every font family the design system names, unless you use catalogue font ids and set no URL at all.
 - `settings.sectionPadding` (`"3rem"` or `"3rem/4rem/5rem"`) replaces the base padding for the whole page. Leave it out unless the design needs it; density does the per-section work.
 - There are no per-section animation or divider keys. Motion and dividers are the two store-wide tokens.
@@ -176,7 +178,7 @@ What CSS is still for: a gradient or image background on one section, a decorati
 
 - At most 120 lines. No `!important`, `@import`, `@tailwind`, `@apply` or `theme()`.
 - Every selector starts with `.template-{slug}`.
-- Hooks that exist: `[data-section-type="HeroSplit"]`, `[data-section-id="values"]`, `#values`, and roles inside a section — `[data-ui~="section"]`, `[data-ui~="header"]`, `[data-ui~="heading"]`, `[data-ui~="subtitle"]`, `[data-ui~="eyebrow"]`, `[data-ui~="card"]`, `[data-ui~="media"]`, `[data-ui~="button"]` (with `[data-variant="primary|accent|secondary|ghost|inverse|custom"]`).
+- Hooks that exist: `[data-section-type="HeroSplit"]`, `[data-section-id="values"]`, `#values`, and roles inside a section — `[data-ui~="section"]`, `[data-ui~="header"]`, `[data-ui~="heading"]`, `[data-ui~="subtitle"]`, `[data-ui~="eyebrow"]`, `[data-ui~="card"]`, `[data-ui~="media"]`, `[data-ui~="hero"]` (HeroSplit), `[data-ui~="button"]` (with `[data-variant="primary|accent|secondary|ghost|inverse|custom"]`).
 - Never target a Tailwind utility class (`.rounded-2xl`, `.bg-white`, `[class*="shadow"]`): they are internal and change.
 - Never declare `--tenant-color-*`: colours come from `designSystem.colors`, and the platform strips these lines. For a tint use alpha: `hsl(var(--tenant-color-primary) / 0.08)`.
 - Wrap any animation in `@media (prefers-reduced-motion: no-preference)`.
@@ -204,6 +206,8 @@ The slug is lowercase letters, digits and hyphens, and is the same in all four f
 ### Phase 4 — Assets
 
 Put every image, logo and video in `assets/` at production size (`references/assets-pipeline.md`, sizes also in `design-brief.md` §5). One photographic treatment across the template. Logos are transparent PNG or SVG. If the handoff describes an image but supplies none, say so and ask for it; do not ship a template with a missing or placeholder image.
+
+**When the handoff describes its images but supplies none.** Say so before anything else, with the list of images, sizes and a prompt for each. Then either the owner supplies the files, or you generate them with `scripts/generate-image.mjs` (it needs a Higgsfield API key ID and secret in the environment; the script's header says how). Write one shared style paragraph and put it in front of every prompt, so the set looks like one shoot. Look at every result: redo any with a face, readable text, a brand, or the wrong subject. **Never publish or hand over a template whose images are stand-ins**, and never use another brand's product photographs.
 
 ### Phase 5 — Validate
 
