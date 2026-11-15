@@ -19,8 +19,16 @@ function checkColorOverrides(overrides, allowed, where, errors) {
   }
 }
 
-function checkField(field, value, where, errors) {
+/** Icon names are matched without regard to case, as the platform does. */
+function isKnownIcon(name, iconNames) {
+  return iconNames.some((icon) => icon.toLowerCase() === String(name).trim().toLowerCase());
+}
+
+function checkField(field, value, where, errors, iconNames) {
   if (value === undefined || value === null) return;
+  if (field.type === "icon" && iconNames && value !== "" && !isKnownIcon(value, iconNames)) {
+    errors.push(`${where}.${field.key}: ${JSON.stringify(value)} is not an icon the platform has — see "Icons" in contract/component-catalog.md`);
+  }
   if (field.type === "select" && field.options && !field.options.includes(String(value))) {
     errors.push(`${where}.${field.key}: ${JSON.stringify(value)} is not one of ${field.options.join(" | ")}`);
   }
@@ -31,7 +39,7 @@ function checkField(field, value, where, errors) {
     value.forEach((item, index) => {
       if (!isRecord(item)) return;
       for (const itemField of field.itemFields) {
-        checkField(itemField, item[itemField.key], `${where}.${field.key}[${index}]`, errors);
+        checkField(itemField, item[itemField.key], `${where}.${field.key}[${index}]`, errors, iconNames);
       }
     });
   }
@@ -49,7 +57,7 @@ function checkSection(section, index, contract, errors) {
   const fields = new Map(schema.fields.map((field) => [field.key, field]));
   for (const [key, value] of Object.entries(config)) {
     const field = fields.get(key);
-    if (field) checkField(field, value, `${where}.config`, errors);
+    if (field) checkField(field, value, `${where}.config`, errors, contract.iconNames);
     else if (!contract.commonSectionConfigKeys.includes(key)) {
       errors.push(`${where}.config.${key}: ${section.type} does not read this key`);
     }

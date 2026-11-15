@@ -1034,3 +1034,15 @@ Closing CTA. Closing heading, subtitle and contact button. Default density: norm
 | `FooterFull` | Full | Comprehensive multi-column layout |
 
 `footerConfig` keys: `tagline`, `sections`, `links`, `socialLinks`, `disclaimer`, `address`, `email`, `partnerMark`, `columnIcon`, `colorOverrides`. `partnerMark` is `full` or `compact`; the Dr Green partner mark cannot be removed, and FooterSimple is always compact.
+
+## Icons
+
+An `icon` field takes one of these names. Any other name is replaced by the section's default icon.
+
+- Health & Medical: `Stethoscope` `Pill` `HeartPulse` `Activity` `Brain` `FlaskConical` `Microscope` `Syringe` `Cross` `Thermometer`
+- Cannabis & Nature: `Leaf` `Flower` `Droplet` `Sun` `Moon` `TreePine` `Flame`
+- Trust & Quality: `Shield` `ShieldCheck` `BadgeCheck` `Award` `Trophy` `Star` `Sparkles` `Lock` `CheckCircle` `Check`
+- Commerce: `Package` `Truck` `ShoppingCart` `ShoppingBag` `CreditCard` `Tag` `Gift`
+- People & Comms: `User` `Users` `UserCheck` `Mail` `Phone` `MessageSquare` `MessageCircle`
+- Time & Location: `Clock` `Calendar` `Timer` `MapPin` `Compass` `Navigation`
+- Action & Info: `Heart` `Zap` `Lightbulb` `Target` `Globe` `TrendingUp` `Eye` `Search` `Info` `Settings` `ClipboardList` `FileText`

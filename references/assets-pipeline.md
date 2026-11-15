@@ -29,34 +29,38 @@
 Every value for an asset key must be a **path-only string**:
 
 ```jsonc
-// CORRECT
+// CORRECT — relative to the template folder; the file is assets/hero.jpg
+{ "imageUrl": "assets/hero.jpg" }
+
+// WRONG — a value that starts with "/" is not resolved against the template's
+// files. The browser asks the storefront itself for it and gets nothing.
 { "imageUrl": "/uploads/healingbuds/hero-1.jpg" }
 
 // WRONG — query string would be stripped on save, breaking signing
-{ "imageUrl": "/uploads/healingbuds/hero-1.jpg?X-Amz-Signature=abc123" }
+{ "imageUrl": "assets/hero.jpg?X-Amz-Signature=abc123" }
 
 // WRONG — the platform uses relative paths into the tenant prefix
 { "imageUrl": "https://s3.eu-west-1.amazonaws.com/budstack-uploads/development/tenants/abc/templates/healingbuds/hero.jpg" }
 ```
 
-The signing layer wraps the relative path with the tenant's S3 prefix and current presigned signature at render time. Hard-coded full URLs bypass signing and become broken links the moment the bucket policy changes.
+The signing layer resolves a relative path against the store's copy of the template and signs it at render time (`lib/templates/sign-layout-assets.ts`: only values that start with neither `/` nor `http` are signed). Hard-coded full URLs bypass signing and become broken links the moment the bucket policy changes.
 
 **Path conventions:**
 
 ```
-/uploads/{template-slug}/{section-name}-{role}.{ext}
+assets/{section-name}-{role}.{ext}
 ```
 
 - `hero-1.jpg` → first hero image
 - `hero-1-bg.jpg` → first hero background
 - `gallery-strain-og-kush.jpg` → gallery item, named after content
-- `logo.png` → tenant logo (referenced by `defaults.json.logoUrl`, NOT a section asset key)
+- `logo.png` → the template's logo (referenced by `defaults.json.logoPath` as `assets/logo.png`, NOT a section asset key)
 
 ---
 
 ## 3. Required Image Dimensions
 
-Generated templates should use placeholder images that **match these target dimensions** so the generator's preview doesn't lie about how the production image will look:
+Every image a template ships should **meet these dimensions**, so it holds up at desktop width:
 
 | Section / role | Recommended dimensions | Aspect | Format |
 |---|---|---|---|
@@ -89,8 +93,8 @@ Generated templates should use placeholder images that **match these target dime
 
 ### On render
 
-1. Section component renders, references `imageUrl: "/uploads/healingbuds/hero-1.jpg"`
-2. The render layer resolves to tenant's S3 prefix: `tenants/{tenantId}/templates/healingbuds/hero-1.jpg`
+1. The section's config holds `imageUrl: "assets/hero.jpg"`
+2. The render layer resolves it under the store's copy of the template: `{store's template folder}/assets/hero.jpg`
 3. AWS SDK presigns the URL with a 15-minute expiry signature
 4. Component receives the signed URL and renders `<img src="https://...?X-Amz-Signature=...">`
 
@@ -167,26 +171,13 @@ budstack-uploads/
 
 ---
 
-## 8. Asset Generation Defaults
+## 8. When the images have not been supplied
 
-When generating a new template without real client assets:
+Do not reference a file that is not in the template's `assets/` folder: the validator fails the template, and the store would show a broken image.
 
-1. **Use placeholder paths** that follow the naming convention so when real assets land, paths don't change:
-   ```json
-   { "imageUrl": "/uploads/{template-slug}/hero-1.jpg" }
-   ```
-
-2. **Provide production-ready dimensions** even for placeholders — operators will swap files in-place; if your placeholder is 800×600 and the real asset is 1920×1080, the swap will look broken for the first few minutes until cache invalidates.
-
-3. **Document required assets** in `template.config.json.requiredAssets[]`:
-   ```json
-   {
-     "requiredAssets": [
-       { "key": "/uploads/{slug}/hero-1.jpg", "minDimensions": "1920x1080", "format": "jpg|webp", "purpose": "Home hero background" },
-       { "key": "/uploads/{slug}/logo.png", "minDimensions": "400x400", "format": "png", "purpose": "Site logo (transparent)" }
-     ]
-   }
-   ```
+1. **Say which images are missing**, with the slot, the minimum size and the format from §3, and ask for them.
+2. **Until they arrive, leave the slot out.** Remove the key or the item; never use an empty string or a made-up path.
+3. **Supply production sizes.** An operator replaces a file in place later; an 800×600 stand-in where a 1920×1080 image belongs looks broken at desktop width.
 
 ---
 
@@ -209,10 +200,9 @@ When in doubt, default to clinical/wellness photography over lifestyle/lounge ph
 Before shipping a generated template:
 
 - [ ] All asset values are path-only (no `?` query string anywhere in `layout.json` or `defaults.json`)
-- [ ] All asset paths use the `/uploads/{template-slug}/...` pattern
+- [ ] Every asset value is `assets/<file>` (no leading slash) and the file is in the template's `assets/` folder — the validator checks both
 - [ ] All keys in `SECTION_ASSET_KEYS` are populated with real paths or omitted (never empty string)
 - [ ] No section uses an undocumented key for an image (e.g., `heroImage`, `bgImage`, `coverUrl` — all wrong)
-- [ ] `template.config.json.requiredAssets[]` lists every asset the template needs with dimensions
 - [ ] All file extensions match the format guidance above
 - [ ] All filenames are lowercase, hyphenated, ASCII-safe
 - [ ] No imagery violates compliance rules for the target market

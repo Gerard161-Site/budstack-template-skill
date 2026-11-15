@@ -131,6 +131,13 @@ describe("layout.json", () => {
     );
   });
 
+  it("rejects an icon the platform does not have, and accepts any letter case", () => {
+    const withIcon = (icon) => (t) => { t.layout.sections[1].config.items = [{ title: "Evidence", description: "Reviewed.", icon }]; };
+
+    assertError(check(withIcon("Rocket")), 'config.items[0].icon: "Rocket" is not an icon the platform has');
+    assert.deepEqual(check(withIcon("shieldcheck")).errors, []);
+  });
+
   it("rejects an asset that is not in the folder", () => {
     assertError(check((t) => { t.layout.sections[0].config.imageUrl = "assets/missing.jpg"; }), "assets/missing.jpg is not in the template folder");
   });

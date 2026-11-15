@@ -217,7 +217,7 @@ Warnings are rubric items. For each one, either fix it or write down why it stan
 
 ### Phase 6 — Upload and review
 
-1. Upload: BudStacks super admin → Templates → Upload (a zip of the folder, or from GitHub). A v2 template that fails the platform's own schema check is rejected at upload with the same messages the validator gives.
+1. Upload: the platform takes a template from a **public GitHub repository** and nothing else (there is no zip upload). Put the four files and `assets/` at the root of the repository, on `main`. Then BudStacks super admin → Templates → Upload: give the repository URL and a template name. **The name you type becomes the slug** (lowercased, spaces to hyphens), so type one that gives the slug in the files: "V2 Pilot" for `v2-pilot`. A v2 template that fails the platform's own schema check is rejected at upload with the same messages the validator gives.
 2. The preview is at `/store/preview/{slug}`.
 3. Get screenshots at 375, 768 and 1440px without running a browser locally: in the `budstack-saas` repository, run the **Template preview screenshots** workflow with the slug (`gh workflow run template-preview-screenshots.yml -f slug={slug}`), then download the artifact.
 4. Review the three screenshots against `references/quality-rubric.md`. Fix and re-upload until every row passes.
