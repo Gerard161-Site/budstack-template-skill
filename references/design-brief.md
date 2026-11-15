@@ -140,6 +140,22 @@ Per section you may also set: **density** (compact, normal, spacious), an **eyeb
 
 Every footer carries the **Dr Green partner mark**. This is mandatory and cannot be removed. Choose `full` (logo block) or `compact` (one line, single colour); FooterSimple is always compact.
 
+### Icons
+
+Sections that show an icon (ValueProps, Features, ProcessSteps, StatsCounter, BentoGrid, TabsShowcase, and the values grid on the About page) take it from this fixed set. Name the icon in the handoff; any other icon cannot be shown.
+
+- Health and medical: Stethoscope, Pill, HeartPulse, Activity, Brain, FlaskConical, Microscope, Syringe, Cross, Thermometer
+- Cannabis and nature: Leaf, Flower, Droplet, Sun, Moon, TreePine, Flame
+- Trust and quality: Shield, ShieldCheck, BadgeCheck, Award, Trophy, Star, Sparkles, Lock, CheckCircle, Check
+- Commerce: Package, Truck, ShoppingCart, ShoppingBag, CreditCard, Tag, Gift
+- People and communication: User, Users, UserCheck, Mail, Phone, MessageSquare, MessageCircle
+- Time and place: Clock, Calendar, Timer, MapPin, Compass, Navigation
+- Action and information: Heart, Zap, Lightbulb, Target, Globe, TrendingUp, Eye, Search, Info, Settings, ClipboardList, FileText
+
+### How many sections
+
+One hero, then four to eight sections, ending in a call to action. Two templates for the same brief should differ in more than colour: choose a different hero type, a different navigation and at least two different content sections.
+
 ### About page
 
 The About page is a fixed sequence of seven sections: page title, mission and story, stats band, values grid, facilities, journey timeline, closing call to action. Supply the text and images; the layout is not designable.
